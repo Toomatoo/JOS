@@ -115,9 +115,13 @@ monitor(struct Trapframe *tf)
 
 	cprintf("Welcome to the JOS kernel monitor!\n");
 	cprintf("Type 'help' for a list of commands.\n");
-
-	unsigned int i = 0x00646c72;
-    cprintf("H%x Wo%s\n", 57616, &i);
+	
+	// Lab1 Ex8 Q4
+	//unsigned int i = 0x00646c72;
+    //cprintf("H%x Wo%s\n", 57616, &i);
+    
+    // Lab1 Ex8 Q5
+    cprintf("x=%d y=%d\n", 3);
 
 	while (1) {
 		buf = readline("K> ");
