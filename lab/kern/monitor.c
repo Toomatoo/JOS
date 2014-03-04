@@ -117,8 +117,8 @@ monitor(struct Trapframe *tf)
 	cprintf("Type 'help' for a list of commands.\n");
 
 	unsigned int i = 0x00646c72;
-    cprintf("H%x Wo%s", 57616, &i);
-    
+    cprintf("H%x Wo%s\n", 57616, &i);
+
 	while (1) {
 		buf = readline("K> ");
 		if (buf != NULL)
