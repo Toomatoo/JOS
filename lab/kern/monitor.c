@@ -82,7 +82,7 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 		arg2 = ebp[4];
 		arg3 = ebp[5];
 		arg4 = ebp[6];
-	}￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼
+	}
 	return 0;
 }
 
