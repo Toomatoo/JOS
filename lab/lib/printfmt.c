@@ -135,7 +135,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 				else if (strcmp (col, "gry") == 0) ncolor = COLOR_GRY;
 				else ncolor = COLOR_WHT;
 			}
-			goto reswitch;
+			break;
 
 		// flag to pad on the right
 		case '-':
