@@ -64,8 +64,9 @@ entry:
 	# Now paging is enabled, but we're still running at a low EIP
 	# (why is this okay?).  Jump up above KERNBASE before entering
 	# C code.
-	mov	$relocated, %eax
-	jmp	*%eax
+	#mov	$relocated, %eax
+	#jmp	*%eax
+	jmp 	relocated
 relocated:
 
 	# Clear the frame pointer register (EBP)
