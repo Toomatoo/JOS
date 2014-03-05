@@ -88,6 +88,7 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 
 		char eip_fn_name[50];
 		strncpy(eip_fn_name, info.eip_fn_name, info.eip_fn_namelen); 
+		eip_fn_name[info.eip_fn_namelen] = '\0';
 		
 		uintptr_t eip_fn_line = (uintptr_t)eip - info.eip_fn_addr;
 
