@@ -178,7 +178,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 			col[0] = *(unsigned char *) fmt++;
 			col[1] = *(unsigned char *) fmt++;
 			col[2] = *(unsigned char *) fmt++;
-			col[4] = '\0';
+			col[3] = '\0';
 			// check for the color
 			if (col[0] >= '0' && col[0] <= '9') {
 				ncolor = ( (col[0]-'0')*10 + (col[1]-'0') ) * 10 + (col[3]-'0');
