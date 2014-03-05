@@ -28,6 +28,15 @@ static const char * const error_string[MAXERROR] =
 	[E_FAULT]	= "segmentation fault",
 };
 
+
+#define COLOR_BLK 1
+#define COLOR_GRN 2
+#define COLOR_RED 4
+#define COLOR_PUR 6
+#define COLOR_WHT 7
+#define COLOR_GRY 8
+int ncolor = COLOR_WHT;
+
 /*
  * Print a number (base <= 16) in reverse order,
  * using specified putch function and associated pointer putdat.
@@ -79,6 +88,7 @@ getint(va_list *ap, int lflag)
 // Main function to format and print a string.
 void printfmt(void (*putch)(int, void*), void *putdat, const char *fmt, ...);
 
+
 void
 vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 {
@@ -104,6 +114,28 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 	reswitch:
 		switch (ch = *(unsigned char *) fmt++) {
 
+		// color
+		case 'C':
+			// Get the color index
+			char col[3];
+			col[0] = *(unsigned char *) fmt++;
+			col[1] = *(unsigned char *) fmt++;
+			col[2] = *(unsigned char *) fmt++;
+			// check for the color
+			if (col[0] >= '0' && col[0] <= '9') {
+				ncolor = ( (col[0]-'0')*10 + (col[1]-'0') ) * 10 + (col[0]-'0');
+			} 
+			else {
+				if (strcmp (col, "blk") == 0) ncolor = COLOR_BLK;
+				else if (strcmp (col, "grn") == 0) ncolor = COLOR_GRN;
+				else if (strcmp (col, "red") == 0) ncolor = COLOR_RED;
+				else if (strcmp (col, "pur") == 0)) ncolor = COLOR_PUR;
+				else if (strcmp (col, "wht") == 0)) ncolor = COLOR_WHT;
+				else if (strcmp (col, "gry") == 0)) ncolor = COLOR_GRY;
+				else ncolor = COLOR_WHT;
+			}
+			goto reswitch;
+			
 		// flag to pad on the right
 		case '-':
 			padc = '-';
@@ -159,6 +191,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 		case 'c':
 			putch(va_arg(ap, int), putdat);
 			break;
+
 
 		// error message
 		case 'e':

@@ -158,8 +158,8 @@ monitor(struct Trapframe *tf)
 {
 	char *buf;
 
-	cprintf("Welcome to the JOS kernel monitor!\n");
-	cprintf("Type 'help' for a list of commands.\n");
+	cprintf("%CredWelcome to the %CgrnJOS kernel %Cpurmonitor!\n");
+	cprintf("%CredType %Cgrn'help' for a list of %Cpurcommands.\n");
 	
 	// Lab1 Ex8 Q4
 	//unsigned int i = 0x00646c72;
