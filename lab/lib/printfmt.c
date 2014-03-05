@@ -97,7 +97,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 	unsigned long long num;
 	int base, lflag, width, precision, altflag;
 	char padc;
-	char col[3];
+	char col[4];
 
 	while (1) {
 		while ((ch = *(unsigned char *) fmt++) != '%') {
@@ -178,14 +178,15 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 			col[0] = *(unsigned char *) fmt++;
 			col[1] = *(unsigned char *) fmt++;
 			col[2] = *(unsigned char *) fmt++;
+			col[4] = '\0';
 			// check for the color
 			if (col[0] >= '0' && col[0] <= '9') {
-				ncolor = ( (col[0]-'0')*10 + (col[1]-'0') ) * 10 + (col[0]-'0');
+				ncolor = ( (col[0]-'0')*10 + (col[1]-'0') ) * 10 + (col[3]-'0');
 			} 
 			else {
-				if (strcmp (col, "blk") == 0) ncolor = COLOR_BLK;
+				if (strcmp (col, "red") == 0) ncolor = COLOR_RED;
 				else if (strcmp (col, "grn") == 0) ncolor = COLOR_GRN;
-				else if (strcmp (col, "red") == 0) ncolor = COLOR_RED;
+				else if (strcmp (col, "blk") == 0) ncolor = COLOR_BLK;
 				else if (strcmp (col, "pur") == 0) ncolor = COLOR_PUR;
 				else if (strcmp (col, "wht") == 0) ncolor = COLOR_WHT;
 				else if (strcmp (col, "gry") == 0) ncolor = COLOR_GRY;
