@@ -349,7 +349,7 @@ page_alloc(int alloc_flags)
 			result = page_free_list;
 			page_free_list = page_free_list->pp_link;
 			// fill in '\0'
-			memset(page2kva(result), 0, PGSIZE)
+			memset(page2kva(result), 0, PGSIZE);
 		}
 	}
 	return result;
