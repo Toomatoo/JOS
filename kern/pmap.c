@@ -323,7 +323,7 @@ page_init(void)
 		//   0x116000~... is for pages (amount is 33)
 		//   others is free
 
-		physaddr_t pageinfo_end = 0x115000 + 34*PGSIZE
+		physaddr_t pageinfo_end = 0x115000 + 34*PGSIZE;
 		if(page2pa(&pages[i]) >= EXTPHYSMEM
 			&& page2pa(&pages[i]) < pageinfo_end) {
 			pages[i].pp_ref = 0;
@@ -354,10 +354,14 @@ page_alloc(int alloc_flags)
 
 	// If (alloc_flags & ALLOC_ZERO), fills the entire
 	// returned physical page with '\0' bytes.
+	struct PageInfo *result = NULL;
 	if(alloc_flags & ALLOC_ZERO) {
-
+		if(!page_free_list) {
+			result = page_free_list;
+			page_free_list = page_free_list.pp_link;
+		}
 	}
-	return 0;
+	return result;
 }
 
 //
