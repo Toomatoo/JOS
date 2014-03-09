@@ -288,53 +288,40 @@ page_init(void)
 
 	size_t i;
 	for (i = 0; i < npages; i++) {
+		
+		pages[0].pp_ref = 0;
+
 		// 1) Mark physical page 0 as in use.
 		//    This way we preserve the real-mode IDT and BIOS structures
 		//    in case we ever need them.  (Currently we don't, but...)
 		if(i == 0) {
 			// Pages allocated at boot time using pmap.c's
 			// boot_alloc do not have valid reference count fields.
-			pages[0].pp_ref = 0;
+			continue;
 		}
 		
 		// 2) The rest of base memory, [PGSIZE, npages_basemem * PGSIZE)
 		//    is free.
 		// Low memory: 0x1000~0xA0000
 		// the first page is reserved. 640KB(except first page)
-		if(page2pa(&pages[i]) >= PGSIZE
-			&& page2pa(&pages[i]) < npages_basemem * PGSIZE) {
-			pages[i].pp_ref = 0;
-			pages[i].pp_link = page_free_list;
-			page_free_list = &pages[i];
-		}
 
 		// 3) Then comes the IO hole [IOPHYSMEM, EXTPHYSMEM), which must
 		//    never be allocated.
 		// IO hole is reserved: 0xA0000~0x100000
-		if(page2pa(&pages[i]) >= IOPHYSMEM
-			&& page2pa(&pages[i]) < EXTPHYSMEM) {		
-			pages[i].pp_ref = 0;
-		}
 
 		// 4) Then extended memory [EXTPHYSMEM, ...).
 		// extended memory: 0x100000~
 		//   0x100000~0x115000 is allocated to kernel(0x115000 is the end of .bss segment)
 		//   0x115000~0x116000 is for kern_pgdir.
 		//   0x116000~... is for pages (amount is 33)
-		//   others is free
-
-		physaddr_t pageinfo_end = 0x115000 + 34*PGSIZE;
-		if(page2pa(&pages[i]) >= EXTPHYSMEM
-			&& page2pa(&pages[i]) < pageinfo_end) {
-			pages[i].pp_ref = 0;
+		if(page2pa(&pages[i]) >= IOPHYSMEM
+			&& page2pa(&pages[i]) < ROUNDUP(PADDR((nextfree)), PGSIZE)) {	
+			continue;	
 		}
-		extern char end[];
-		if(page2pa(&pages[i]) >= pageinfo_end
-			&& page2pa(&pages[i]) < (physaddr_t)(ROUNDUP((char *) end, PGSIZE) + npages*PGSIZE) ) {
-			pages[i].pp_ref = 0;
-			pages[i].pp_link = page_free_list;
-			page_free_list = &pages[i];
-		}
+		
+		// others is free
+		pages[i].pp_link = page_free_list;
+		page_free_list = &pages[i];
 	}
 }
 
@@ -359,6 +346,8 @@ page_alloc(int alloc_flags)
 		if(!page_free_list) {
 			result = page_free_list;
 			page_free_list = page_free_list->pp_link;
+			// fill in '\0'
+			memset(page2kva(result), 0, PGSIZE)
 		}
 	}
 	return result;
