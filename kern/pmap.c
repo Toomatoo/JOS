@@ -123,12 +123,14 @@ boot_alloc(uint32_t n)
 	// bytes.  Doesn't initialize the memory.  Returns a kernel virtual address.
 	else if (n > 0) {
 		size_t srequest = (size_t)ROUNDUP((char *)n, PGSIZE);
-		if(npages_left < srequest) {
+		cprintf("Request %u\n", srequest/PGSIZE);
+		
+		if(npages_left < srequest/PGSIZE) {
 			panic("Out of memory!\n");
 		}
 		result = nextfree;
 		nextfree += srequest;
-		npages_left -= srequest;
+		npages_left -= srequest/PGSIZE;
 	}
 
 	// Make sure nextfree is kept aligned to a multiple of PGSIZE;
