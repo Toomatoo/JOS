@@ -354,10 +354,14 @@ page_alloc(int alloc_flags)
 
 	// If (alloc_flags & ALLOC_ZERO), fills the entire
 	// returned physical page with '\0' bytes.
+	struct PageInfo *result = NULL;
 	if(alloc_flags & ALLOC_ZERO) {
-
+		if(!page_free_list) {
+			result = page_free_list;
+			page_free_list = page_free_list.pp_link;
+		}
 	}
-	return 0;
+	return result;
 }
 
 //
