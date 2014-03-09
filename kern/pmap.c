@@ -122,13 +122,13 @@ boot_alloc(uint32_t n)
 	// If n>0, allocates enough pages of contiguous physical memory to hold 'n'
 	// bytes.  Doesn't initialize the memory.  Returns a kernel virtual address.
 	else if (n > 0) {
-		size_t srequest = ROUNDUP( (char *)n, PGSIZE);
+		size_t srequest = (size_t)ROUNDUP( (char *)n, PGSIZE);
 		if(npages_left < srequest) {
 			panic("Out of memory!\n");
 		}
 		result = nextfree;
 		nextfree += srequest;
-		npages_left -= srequest
+		npages_left -= srequest;
 	}
 
 	// Make sure nextfree is kept aligned to a multiple of PGSIZE;
@@ -296,8 +296,8 @@ page_init(void)
 		
 		// 2) The rest of base memory, [PGSIZE, npages_basemem * PGSIZE)
 		//    is free.
-		if(page2pa(pages[i]) >= PGSIZE
-			&& page2pa(pages[i]) < npages_basemem * PGSIZE) {
+		if(page2pa(&pages[i]) >= PGSIZE
+			&& page2pa(&pages[i]) < npages_basemem * PGSIZE) {
 			pages[i].pp_ref = 0;
 			pages[i].pp_link = page_free_list;
 			page_free_list = &pages[i];
@@ -305,8 +305,8 @@ page_init(void)
 
 		// 3) Then comes the IO hole [IOPHYSMEM, EXTPHYSMEM), which must
 		//    never be allocated.
-		if(page2pa(pages[i]) >= PGSIZE
-			&& page2pa(pages[i]) < npages_basemem * PGSIZE) {		
+		if(page2pa(&pages[i]) >= PGSIZE
+			&& page2pa(&pages[i]) < npages_basemem * PGSIZE) {		
 			pages[i].pp_ref = 0;
 		}
 
