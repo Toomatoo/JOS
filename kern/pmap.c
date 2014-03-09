@@ -358,7 +358,7 @@ page_alloc(int alloc_flags)
 	if(alloc_flags & ALLOC_ZERO) {
 		if(!page_free_list) {
 			result = page_free_list;
-			page_free_list = page_free_list.pp_link;
+			page_free_list = page_free_list->pp_link;
 		}
 	}
 	return result;
