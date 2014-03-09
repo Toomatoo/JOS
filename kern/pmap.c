@@ -179,7 +179,7 @@ mem_init(void)
 	// Your code goes here:
 
 	// Request for pages to store 'struct PageInfo's
-	uint32_t pagesneed = (uint32_t)(sizeof(struct PageInfo) * npages)
+	uint32_t pagesneed = (uint32_t)(sizeof(struct PageInfo) * npages);
 	pages = (struct PageInfo *)boot_alloc(pagesneed);
 	
 	//////////////////////////////////////////////////////////////////////
