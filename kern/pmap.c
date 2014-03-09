@@ -99,7 +99,41 @@ boot_alloc(uint32_t n)
 	//
 	// LAB 2: Your code here.
 
-	return NULL;
+	// The amount of pages left.
+	// Initialize npages_left if this is the first time.
+	static size_t npages_left = -1;
+	if(npages_left == -1) {
+		npages_left = npages;
+	}
+
+	if(n < 0) {
+		panic("The size of space requested is below 0!\n");
+		return NULL;
+	}
+	// if n==0, returns the address of the next free page without allocating
+	// anything.
+	if (n == 0) {
+// !- Whether I should check here -!
+		if(npages_left < 1) {
+			panic("Out of memory!\n");
+		}
+		result = nextfree;
+	}
+	// If n>0, allocates enough pages of contiguous physical memory to hold 'n'
+	// bytes.  Doesn't initialize the memory.  Returns a kernel virtual address.
+	else if (n > 0) {
+		size_t srequest = ROUNDUP( (char *)n, PGSIZE);
+		if(npages_left < srequest) {
+			panic("Out of memory!\n");
+		}
+		result = nextfree;
+		nextfree += srequest;
+		npages_left -= srequest
+	}
+
+	// Make sure nextfree is kept aligned to a multiple of PGSIZE;
+	//nextfree = ROUNDUP((char *) nextfree, PGSIZE);
+	return result;
 }
 
 // Set up a two-level page table:
@@ -121,7 +155,7 @@ mem_init(void)
 	i386_detect_memory();
 
 	// Remove this line when you're ready to test this function.
-	panic("mem_init: This function is not finished\n");
+	//panic("mem_init: This function is not finished\n");
 
 	//////////////////////////////////////////////////////////////////////
 	// create initial page directory.
@@ -144,7 +178,9 @@ mem_init(void)
 	// array.  'npages' is the number of physical pages in memory.
 	// Your code goes here:
 
-
+	// Request for pages to store 'struct PageInfo's
+	pages = (struct PageInfo *)boot_alloc(sizeof(struct PageInfo) * npages);
+	
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
 	// up the list of free physical pages. Once we've done so, all further
@@ -246,8 +282,38 @@ page_init(void)
 	// Change the code to reflect this.
 	// NB: DO NOT actually touch the physical memory corresponding to
 	// free pages!
+
 	size_t i;
 	for (i = 0; i < npages; i++) {
+		// 1) Mark physical page 0 as in use.
+		//    This way we preserve the real-mode IDT and BIOS structures
+		//    in case we ever need them.  (Currently we don't, but...)
+		if(i == 0) {
+			// Pages allocated at boot time using pmap.c's
+			// boot_alloc do not have valid reference count fields.
+			pages[0].pp_ref = 0;
+		}
+		
+		// 2) The rest of base memory, [PGSIZE, npages_basemem * PGSIZE)
+		//    is free.
+		if(page2pa(pages[i]) >= PGSIZE
+			&& page2pa(pages[i]) < npages_basemem * PGSIZE) {
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		}
+
+		// 3) Then comes the IO hole [IOPHYSMEM, EXTPHYSMEM), which must
+		//    never be allocated.
+		if(page2pa(pages[i]) >= PGSIZE
+			&& page2pa(pages[i]) < npages_basemem * PGSIZE) {		
+			pages[i].pp_ref = 0;
+		}
+
+		// 4) Then extended memory [EXTPHYSMEM, ...).
+		//    Some of it is in use, some is free. Where is the kernel
+		//    in physical memory?  Which pages are already in use for
+		//    page tables and other data structures?
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
@@ -267,6 +333,12 @@ struct PageInfo *
 page_alloc(int alloc_flags)
 {
 	// Fill this function in
+
+	// If (alloc_flags & ALLOC_ZERO), fills the entire
+	// returned physical page with '\0' bytes.
+	if(alloc_flags & ALLOC_ZERO) {
+
+	}
 	return 0;
 }
 
