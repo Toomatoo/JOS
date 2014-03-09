@@ -124,7 +124,7 @@ boot_alloc(uint32_t n)
 	else if (n > 0) {
 		size_t srequest = (size_t)ROUNDUP((char *)n, PGSIZE);
 		cprintf("Request %u\n", srequest/PGSIZE);
-		
+
 		if(npages_left < srequest/PGSIZE) {
 			panic("Out of memory!\n");
 		}
@@ -299,6 +299,8 @@ page_init(void)
 		
 		// 2) The rest of base memory, [PGSIZE, npages_basemem * PGSIZE)
 		//    is free.
+		// Low memory: 0x1000~0xA0000
+		// the first page is reserved. 640KB(except first page)
 		if(page2pa(&pages[i]) >= PGSIZE
 			&& page2pa(&pages[i]) < npages_basemem * PGSIZE) {
 			pages[i].pp_ref = 0;
@@ -308,18 +310,31 @@ page_init(void)
 
 		// 3) Then comes the IO hole [IOPHYSMEM, EXTPHYSMEM), which must
 		//    never be allocated.
-		if(page2pa(&pages[i]) >= PGSIZE
-			&& page2pa(&pages[i]) < npages_basemem * PGSIZE) {		
+		// IO hole is reserved: 0xA0000~0x100000
+		if(page2pa(&pages[i]) >= IOPHYSMEM
+			&& page2pa(&pages[i]) < EXTPHYSMEM) {		
 			pages[i].pp_ref = 0;
 		}
 
 		// 4) Then extended memory [EXTPHYSMEM, ...).
-		//    Some of it is in use, some is free. Where is the kernel
-		//    in physical memory?  Which pages are already in use for
-		//    page tables and other data structures?
-		pages[i].pp_ref = 0;
-		pages[i].pp_link = page_free_list;
-		page_free_list = &pages[i];
+		// extended memory: 0x100000~
+		//   0x100000~0x115000 is allocated to kernel(0x115000 is the end of .bss segment)
+		//   0x115000~0x116000 is for kern_pgdir.
+		//   0x116000~... is for pages (amount is 33)
+		//   others is free
+
+		physaddr_t pageinfo_end = 0x115000 + 34*PGSIZE
+		if(page2pa(&pages[i]) >= EXTPHYSMEM
+			&& page2pa(&pages[i]) < pageinfo_end) {
+			pages[i].pp_ref = 0;
+		}
+		extern char end[];
+		if(page2pa(&pages[i]) >= pageinfo_end
+			&& page2pa(&pages[i]) < (physaddr_t)(ROUNDUP((char *) end, PGSIZE) + npages*PGSIZE) ) {
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		}
 	}
 }
 
