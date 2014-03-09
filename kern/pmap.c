@@ -365,7 +365,7 @@ page_free(struct PageInfo *pp)
 {
 	// Fill this function in
 	if(!pp)
-		panic("page_free: invalid page to free!\n")
+		panic("page_free: invalid page to free!\n");
 	pp->pp_link = page_free_list;
 	page_free_list = pp;
 }
