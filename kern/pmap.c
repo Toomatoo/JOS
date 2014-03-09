@@ -179,7 +179,7 @@ mem_init(void)
 	// Your code goes here:
 
 	// Request for pages to store 'struct PageInfo's
-	pages = (struct PageInfo *)boot_alloc(uint32_t(sizeof(struct PageInfo) * npages));
+	pages = (struct PageInfo *)boot_alloc((uint32_t)(sizeof(struct PageInfo) * npages));
 	
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
