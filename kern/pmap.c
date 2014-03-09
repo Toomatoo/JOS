@@ -122,7 +122,7 @@ boot_alloc(uint32_t n)
 	// If n>0, allocates enough pages of contiguous physical memory to hold 'n'
 	// bytes.  Doesn't initialize the memory.  Returns a kernel virtual address.
 	else if (n > 0) {
-		size_t srequest = (size_t)ROUNDUP( (char *)n, PGSIZE);
+		size_t srequest = (size_t)ROUNDUP(n, PGSIZE);
 		if(npages_left < srequest) {
 			panic("Out of memory!\n");
 		}
