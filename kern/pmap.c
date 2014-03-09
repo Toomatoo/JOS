@@ -122,7 +122,7 @@ boot_alloc(uint32_t n)
 	// If n>0, allocates enough pages of contiguous physical memory to hold 'n'
 	// bytes.  Doesn't initialize the memory.  Returns a kernel virtual address.
 	else if (n > 0) {
-		size_t srequest = (size_t)ROUNDUP(n, PGSIZE);
+		size_t srequest = (size_t)ROUNDUP((char *)n, PGSIZE);
 		if(npages_left < srequest) {
 			panic("Out of memory!\n");
 		}
@@ -179,7 +179,8 @@ mem_init(void)
 	// Your code goes here:
 
 	// Request for pages to store 'struct PageInfo's
-	pages = (struct PageInfo *)boot_alloc((uint32_t)(sizeof(struct PageInfo) * npages));
+	uint32_t pagesneed = (uint32_t)(sizeof(struct PageInfo) * npages)
+	pages = (struct PageInfo *)boot_alloc(pagesneed);
 	
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
