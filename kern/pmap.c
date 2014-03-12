@@ -426,29 +426,14 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 				return NULL;
 			else {
 				pgtbl->pp_ref ++;
+				/* store in physical address*/
 				*pde = page2pa(pgtbl) | PTE_U | PTE_W | PTE_P;
 			}
 		}
 	}
 
-	// Third, check the page table entiry
-	pte_t *pte = (pte_t *)(PTE_ADDR(*pde) + ptx);
-
-	/*
-	if((*pte) & PTE_P == 0) {
-		if(create == 0) 
-			return NULL;
-		else {
-			// !- I assume that the page need to be zero -!
-			struct PageInfo *pg = page_alloc(ALLOC_ZERO);
-			if(pg == NULL)
-				return NULL;
-			else {
-				pg->pp_ref ++;
-				*pte = page2pa(pg) | PTE_U | PTE_P;
-			}
-		}
-	}*/
+	// Third, check the page table entiry (return an address - vitual address to memory)
+	pte_t *pte = (pte_t *)KADDR(PTE_ADDR(*pde) + ptx);
 
 	return pte;
 }
@@ -475,9 +460,10 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 
 	// Second, map the virtual address and physical address
 	int i;
+	/* Do I need to consider the align?*/
 	for(i=0; i<ROUNDUP(size, PGSIZE)/PGSIZE; i++) {
 		pte_t *pte = pgdir_walk(pgdir, (void *)(PTE_ADDR(va)+i*PGSIZE), 1);
-		*pte = (PTE_ADDR(pa)+i*PGSIZE) | perm|PTE_P;
+		*pte = (PTE_ADDR(pa)+i*PGSIZE) | perm | PTE_P;
 	}
 }
 
@@ -512,17 +498,26 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	// Fill this function in
 
 	pte_t *pte= pgdir_walk(pgdir, va, 1);
-
+	if(pte == NULL) 
+		return E_NO_MEM;
 	// If there is already a page mapped at 'va', it should be page_remove()d.
-	if(pte != NULL && (((*pte) & PTE_P) == 1))
-		page_remove(pgdir, va);
+	if(((*pte) & PTE_P) == 1) {
+		//On one hand, the mapped page is pp;
+		if(PTE_ADDR(*pte) == page2pa(pp)) {
+			// The TLB must be invalidated if a page was formerly present at 'va'.
+			tlb_invalidate(pgdir, va);
+			// The reference for the same page should not change(latter add one)
+			pp->pp_ref --;
+		}
+		//On the other hand, the mapped page is not pp;
+		else
+			page_remove(pgdir, va);
+	}
 
 	// pp->pp_ref should be incremented if the insertion succeeds.
 	*pte = PTE_ADDR(page2pa(pp)) | perm | PTE_P;
 	pp->pp_ref ++;
-
-	// The TLB must be invalidated if a page was formerly present at 'va'.
-	tlb_invalidate(pgdir, va);
+	
 	return 0;
 }
 
@@ -541,8 +536,7 @@ struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	// Fill this function in
-
-	pte_t *pte= pgdir_walk(pgdir, va, 1);
+	pte_t *pte= pgdir_walk(pgdir, va, 0);
 	struct PageInfo *pg = NULL;
 	// Check if the pte_store is zero
 	if(pte_store != 0)
