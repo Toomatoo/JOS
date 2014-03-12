@@ -859,7 +859,7 @@ check_page(void)
 	assert(page_insert(kern_pgdir, pp2, (void*) PGSIZE, PTE_W) == 0);
 cprintf("%x %x %x\n",kern_pgdir, PTE_ADDR(kern_pgdir[0]), page2pa(pp0));
 
-cprintf("%x %x\n", *(PTE_ADDR(kern_pgdir[0]) + PTX(PGSIZE)), page2pa(pp2));
+cprintf("%x %x\n", (pte_t)(*(PTE_ADDR(kern_pgdir[0]) + PTX(PGSIZE))), page2pa(pp2));
 	assert(check_va2pa(kern_pgdir, PGSIZE) == page2pa(pp2));
 	assert(pp2->pp_ref == 1);
 
