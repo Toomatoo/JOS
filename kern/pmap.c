@@ -854,6 +854,8 @@ cprintf("%u %u\n", check_va2pa(kern_pgdir, 0x0), page2pa(pp1));
 	assert(pp1->pp_ref == 1);
 	assert(pp0->pp_ref == 1);
 
+cprintf("%u %u\n",PTE_ADDR(kern_pgdir[0]) , page2pa(pp0));
+
 	// should be able to map pp2 at PGSIZE because pp0 is already allocated for page table
 	assert(page_insert(kern_pgdir, pp2, (void*) PGSIZE, PTE_W) == 0);
 cprintf("%u %u\n", check_va2pa(kern_pgdir, PGSIZE), page2pa(pp2));
@@ -865,7 +867,6 @@ cprintf("%u %u\n", check_va2pa(kern_pgdir, PGSIZE), page2pa(pp2));
 
 	// should be able to map pp2 at PGSIZE because it's already there
 	assert(page_insert(kern_pgdir, pp2, (void*) PGSIZE, PTE_W) == 0);
-cprintf("%u %u\n",PTE_ADDR(kern_pgdir[0]) , page2pa(pp0));
 	assert(check_va2pa(kern_pgdir, PGSIZE) == page2pa(pp2));
 	assert(pp2->pp_ref == 1);
 
