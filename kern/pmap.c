@@ -463,7 +463,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	/* Do I need to consider the align?*/
 	for(i=0; i<ROUNDUP(size, PGSIZE)/PGSIZE; i++) {
 		pte_t *pte = pgdir_walk(pgdir, (void *)(PTE_ADDR(va)+i*PGSIZE), 1);
-		*pte = (PTE_ADDR(pa)+i*PGSIZE) | perm | PTE_P;
+		*pte = (pa+i*PGSIZE) | perm | PTE_P;
 	}
 }
 
@@ -515,7 +515,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	}
 
 	// pp->pp_ref should be incremented if the insertion succeeds.
-	*pte = PTE_ADDR(page2pa(pp)) | perm | PTE_P;
+	*pte = page2pa(pp) | perm | PTE_P;
 	pp->pp_ref ++;
 	
 	return 0;
