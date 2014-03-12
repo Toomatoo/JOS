@@ -516,7 +516,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	}
 
 	// pp->pp_ref should be incremented if the insertion succeeds.
-	*pte = (pte_t)page2kva(pp) | perm | PTE_P;
+	*pte = page2pa(pp) | perm | PTE_P;
 	pp->pp_ref ++;
 	
 	return 0;
