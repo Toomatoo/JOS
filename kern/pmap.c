@@ -514,7 +514,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	pte_t *pte= pgdir_walk(pgdir, va, 1);
 
 	// If there is already a page mapped at 'va', it should be page_remove()d.
-	if(pte != NULL && ((*pte) & PTE_P == 1))
+	if(pte != NULL && (((*pte) & PTE_P) == 1))
 		page_remove(pgdir, va);
 
 	// pp->pp_ref should be incremented if the insertion succeeds.
