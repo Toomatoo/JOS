@@ -516,7 +516,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	}
 
 	// pp->pp_ref should be incremented if the insertion succeeds.
-	*pte = page2pa(pp) | perm | PTE_P;
+	*pte = page2kvm(pp) | perm | PTE_P;
 	pp->pp_ref ++;
 	
 	return 0;
@@ -806,7 +806,7 @@ check_va2pa(pde_t *pgdir, uintptr_t va)
 	if (!(*pgdir & PTE_P))
 		return ~0;
 	p = (pte_t*) KADDR(PTE_ADDR(*pgdir));
-	cprintf("**%x", p);
+	cprintf("**%x\n", p);
 	if (!(p[PTX(va)] & PTE_P))
 		return ~0;
 	cprintf("**%x\n\n", p[PTX(va)]);
