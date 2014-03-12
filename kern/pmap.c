@@ -427,7 +427,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 			else {
 				pgtbl->pp_ref ++;
 				/* store in physical address*/
-				*pde =  page2kva(pgtbl) | PTE_U | PTE_W | PTE_P );
+				*pde =  (pde_t)page2kva(pgtbl) | PTE_U | PTE_W | PTE_P );
 			}
 		}
 	}
