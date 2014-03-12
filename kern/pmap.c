@@ -416,7 +416,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	// Second, check the page directory entity
 	pde_t *pde = &pgdir[pdx];
 
-	if((*pde) & PTE_P == 0) {
+	if(((*pde) & PTE_P) == 0) {
 		if(create == 0) 
 			return NULL;
 		else {
@@ -426,7 +426,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 				return NULL;
 			else {
 				pgtbl->pp_ref ++;
-				*pde = page2pa(pgtbl) | PTE_U | PTE W | PTE_P;
+				*pde = page2pa(pgtbl) | PTE_U | PTE_W | PTE_P;
 			}
 		}
 	}
@@ -476,7 +476,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	// Second, map the virtual address and physical address
 	int i;
 	for(i=0; i<ROUNDUP(size, PGSIZE)/PGSIZE; i++) {
-		pte_t *pte = pgdir_walk(pgdir, PTE_ADDR(va)+i*PGSIZE, 1);
+		pte_t *pte = pgdir_walk(pgdir, (void *)(PTE_ADDR(va)+i*PGSIZE), 1);
 		*pte = (PTE_ADDR(pa)+i*PGSIZE) | perm|PTE_P;
 	}
 }
@@ -511,14 +511,14 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
 
-	pte_t = pgdir_walk(pgdir, va, 1);
+	pte_t *pte= pgdir_walk(pgdir, va, 1);
 
 	// If there is already a page mapped at 'va', it should be page_remove()d.
 	if(pte != NULL && ((*pte) & PTE_P == 1))
 		page_remove(pgdir, va);
 
 	// pp->pp_ref should be incremented if the insertion succeeds.
-	*pte_t = PTE_ADDR(page2pa(pp)) | perm | PTE_P;
+	*pte = PTE_ADDR(page2pa(pp)) | perm | PTE_P;
 	pp->pp_ref ++;
 
 	// The TLB must be invalidated if a page was formerly present at 'va'.
@@ -549,7 +549,7 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 		*pte_store = pte;
 
 	// Check if the page is mapped
-	if(pte != NULL && ((*pte) & PTE_P == 1)) {
+	if(pte != NULL && (((*pte) & PTE_P) == 1)) {
 		pg = pa2page(PTE_ADDR(*pte));
 	}
 
