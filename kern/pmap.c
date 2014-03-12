@@ -215,7 +215,7 @@ mem_init(void)
 	boot_map_region(
  		kern_pgdir, 
 		UPAGES, 
-		ROUNDUP(npages*sizeof(struct PageInfo)), 
+		ROUNDUP(npages*sizeof(struct PageInfo), PGSIZE), 
 		PADDR((uintptr_t)pages),
 		PTE_U);
 
