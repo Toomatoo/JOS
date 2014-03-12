@@ -216,7 +216,7 @@ mem_init(void)
  		kern_pgdir, 
 		UPAGES, 
 		ROUNDUP(npages*sizeof(struct PageInfo), PGSIZE), 
-		PADDR((uintptr_t)pages),
+		PADDR((void *)pages),
 		PTE_U);
 
 
@@ -236,7 +236,7 @@ mem_init(void)
  		kern_pgdir, 
 		KSTACKTOP-KSTKSIZE, 
 		KSTKSIZE, 
-		PADDR((physaddr_t)bootstack),
+		PADDR((void *)bootstack),
 		PTE_W);
 
 	//////////////////////////////////////////////////////////////////////
