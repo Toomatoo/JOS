@@ -427,13 +427,13 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 			else {
 				pgtbl->pp_ref ++;
 				/* store in physical address*/
-				*pde = page2pa(pgtbl) | PTE_U | PTE_W | PTE_P;
+				*pde = KADDR(page2pa(pgtbl)) | PTE_U | PTE_W | PTE_P;
 			}
 		}
 	}
 
 	// Third, check the page table entiry (return an address - vitual address to memory)
-	pte_t *pte = (pte_t *)KADDR(PTE_ADDR(*pde) + ptx);
+	pte_t *pte = (pte_t *)(PTE_ADDR(*pde) + ptx);
 
 	return pte;
 }
