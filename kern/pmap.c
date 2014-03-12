@@ -434,7 +434,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 
 	// Third, check the page table entiry (return an address - vitual address to memory)
 	pte_t *pte;
-	pte = (pte_t *)KADDR(PTE_ADDR(*pde) + ptx);
+	pte = (pte_t *)KADDR(PTE_ADDR(*pde)) + ptx;
 
 	return pte;
 }
