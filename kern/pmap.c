@@ -499,7 +499,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 
 	pte_t *pte= pgdir_walk(pgdir, va, 1);
 	if(pte == NULL) 
-		return E_NO_MEM;
+		return -E_NO_MEM;
 	// If there is already a page mapped at 'va', it should be page_remove()d.
 	if(((*pte) & PTE_P) == 1) {
 		//On one hand, the mapped page is pp;
