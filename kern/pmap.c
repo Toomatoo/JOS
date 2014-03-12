@@ -808,7 +808,7 @@ check_va2pa(pde_t *pgdir, uintptr_t va)
 	cprintf("**%x", p);
 	if (!(p[PTX(va)] & PTE_P))
 		return ~0;
-	cprintf("**%x\n\n", PTE_ADDR(p[PTX(va)]));
+	cprintf("**%x\n\n", p[PTX(va)]);
 	return PTE_ADDR(p[PTX(va)]);
 }
 
