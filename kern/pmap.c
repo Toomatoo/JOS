@@ -855,6 +855,7 @@ check_page(void)
 
 	// should be able to map pp2 at PGSIZE because pp0 is already allocated for page table
 	assert(page_insert(kern_pgdir, pp2, (void*) PGSIZE, PTE_W) == 0);
+	cprintf("%u %u\n", check_va2pa(kern_pgdir, PGSIZE), page2pa(pp2));
 	assert(check_va2pa(kern_pgdir, PGSIZE) == page2pa(pp2));
 	assert(pp2->pp_ref == 1);
 
