@@ -7,6 +7,7 @@
 #include <inc/memlayout.h>
 #include <inc/assert.h>
 #include <inc/x86.h>
+#include <inc/stdarg.h>
 
 #include <kern/console.h>
 #include <kern/monitor.h>
@@ -26,6 +27,7 @@ static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
 	{ "backtrace", "Display a procedure of backtrace", mon_backtrace },
+	{ "showmappings", "Displaythe physical page mappings at a range of virtual space", mon_showmappings},
 };
 #define NCOMMANDS (sizeof(commands)/sizeof(commands[0]))
 
@@ -109,7 +111,15 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 }
 
 
+int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
+	extern pde_t *kern_pgdir;
+	unsigned int num[2];
+	char **_argv = argv;
+	num[0] = va_arg(_argv[1], "unsigned int");
+	num[1] = va_arg(_argv[2], "unsigned int");
+	cprintf("%x %x\n", num[0], [num][1]);
 
+}
 /***** Kernel monitor command interpreter *****/
 
 #define WHITESPACE "\t\r\n "

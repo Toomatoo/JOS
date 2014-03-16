@@ -107,7 +107,7 @@ boot_alloc(uint32_t n)
 	if(npages_left == -1) {
 		npages_left = npages;
 	}
-
+	//*****************************My code begins***********************************//
 	if(n < 0) {
 		panic("The size of space requested is below 0!\n");
 		return NULL;
@@ -138,6 +138,7 @@ boot_alloc(uint32_t n)
 	// Make sure nextfree is kept aligned to a multiple of PGSIZE;
 	//nextfree = ROUNDUP((char *) nextfree, PGSIZE);
 	return result;
+	//******************************My code ends***********************************//
 }
 
 // Set up a two-level page table:
