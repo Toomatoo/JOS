@@ -157,7 +157,7 @@ int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
 	if(!pageofva)
 		return -1;
 
-	unsigned int perm;
+	unsigned int perm = 0;
 	// set: set the permission bits completely to perm
 	if(strcmp(argv[1], "-set") == 0) {
 		perm = 0xfffff000 + strtol(argv[3], NULL, 16);
