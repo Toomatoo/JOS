@@ -172,7 +172,7 @@ int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
 
 	// print the result of permission bits
 	cprintf("0x%x permission bits: %x\n", 
-		num, perm);
+		num, perm & 0xfff);
 
 	return 0;
 }
