@@ -165,13 +165,13 @@ int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
 	}
 	// clear: clear all the permission bits
 	if(strcmp(argv[1], "-clear") == 0) {
-		perm = 0xfffff000;
+		perm = 0xfffff001;
 	}
 
 	*((pte_t *)_pte) = *((pte_t *)_pte) & perm;
 
 	// print the result of permission bits
-	cprintf("0x%x permission bits: %x\n", 
+	cprintf("0x%x permission bits: 0x%x\n", 
 		num, perm & 0xfff);
 
 	return 0;
