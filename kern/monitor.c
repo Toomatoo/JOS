@@ -135,7 +135,7 @@ cprintf("num[0]: 0x%x\n", num[0]);
 			cprintf("0x%x: There is no physical page here.\n");
 			continue;
 		}
-cprintf("pte: 0x%x\n", pageofva);
+cprintf("pte: 0x%x\n", _pte);
 		pte_t pte = *((pte_t *)_pte);
 cprintf("pte: 0x%x\n", pte);
 		unsigned int perm = (unsigned int) (pte - PTE_ADDR(pte));
