@@ -29,6 +29,8 @@ static struct Command commands[] = {
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
 	{ "backtrace", "Display a procedure of backtrace", mon_backtrace },
 	{ "showmappings", "Displaythe physical page mappings at a range of virtual space", mon_showmappings},
+	{ "changepermission", "Set, clear or change the permissions of any mapping in the current address space.", 
+		mon_changepermission},
 };
 #define NCOMMANDS (sizeof(commands)/sizeof(commands[0]))
 
@@ -114,12 +116,11 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 
 int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 	// The instruction 'showmappings' must be attached with 2 arguments
-	if(argc > 3)
+	if(argc != 3)
 		return -1;
 
 	// Get the 2 arguments
 	extern pde_t *kern_pgdir;
-cprintf("kern_pgdir: 0x%x\n", kern_pgdir);
 	unsigned int num[2];
 
 	num[0] = strtol(argv[1], NULL, 16);
@@ -127,7 +128,6 @@ cprintf("kern_pgdir: 0x%x\n", kern_pgdir);
 
 	// Show the mappings
 	for(; num[0]<=num[1]; num[0] += PGSIZE) {
-cprintf("num[0]: 0x%x\n", num[0]);
 		unsigned int _pte;
 		struct PageInfo *pageofva = page_lookup(kern_pgdir, (void *)num[0], (pte_t **)(&_pte));
 
@@ -135,14 +135,45 @@ cprintf("num[0]: 0x%x\n", num[0]);
 			cprintf("0x%x: There is no physical page here.\n");
 			continue;
 		}
-cprintf("pte: 0x%x\n", _pte);
 		pte_t pte = *((pte_t *)_pte);
-cprintf("pte: 0x%x\n", pte);
 		unsigned int perm = (unsigned int) (pte - PTE_ADDR(pte));
 
 		cprintf("0x%x: physical address - 0x%x, permission bits: 0x%x\n", 
 			num[0], PTE_ADDR(pte), perm);
 	}
+	return 0;
+}
+
+int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
+	// instruction format: changepermission [-option] [vitual address] [perm]
+	if(agrc != 4 && argc != 3)
+		return -1
+
+	extern pde_t *kern_pgdir;
+	unsigned int num = strtol(argv[2], NULL, 16);
+
+	unsigned int _pte;
+	struct PageInfo *pageofva = page_lookup(kern_pgdir, (void *)num, (pte_t **)(&_pte));
+	if(!pageofva)
+		return -1;
+
+	unsigned int perm;
+	// set: set the permission bits completely to perm
+	if(strcmp(argv, "-set") == 0) {
+		perm = 0xfffff000 + strtol(argv[3], NULL, 16);
+		
+	}
+	// clear: clear all the permission bits
+	if(strcmp(argv, "-clear") == 0) {
+		perm = 0xfffff000;
+	}
+
+	*((pte_t *)_pte) = *((pte_t *)_pte) & perm;
+
+	// print the result of permission bits
+	cprintf("0x%x permission bits: %x\n", 
+		num, perm);
+
 	return 0;
 }
 /***** Kernel monitor command interpreter *****/
