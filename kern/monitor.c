@@ -161,7 +161,7 @@ int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
 	*((pte_t *)_pte) = *((pte_t *)_pte) & 0xfffff000;
 	// set: set the permission bits completely to perm
 	if(strcmp(argv[1], "-set") == 0) {
-		perm = strtol(argv[3], NULL, 16);
+		perm = strtol(argv[3], NULL, 16) | PTE_P;
 		
 	}
 	// clear: clear all the permission bits
