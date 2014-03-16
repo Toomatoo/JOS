@@ -112,13 +112,16 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 
 
 int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
+	if(argv > 3)
+		return -1;
+	
 	extern pde_t *kern_pgdir;
 	unsigned int num[2];
 
 	num[0] = strtol(argv[1], NULL, 16);
 	num[1] = strtol(argv[2], NULL, 16);
 	cprintf("%x %x\n", num[0], num[1]);
-
+	return 0;
 }
 /***** Kernel monitor command interpreter *****/
 
