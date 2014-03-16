@@ -119,6 +119,7 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 
 	// Get the 2 arguments
 	extern pde_t *kern_pgdir;
+cprintf("kern_pgdir: 0x%x\n", kern_pgdir);
 	unsigned int num[2];
 
 	num[0] = strtol(argv[1], NULL, 16);
