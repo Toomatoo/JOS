@@ -129,7 +129,7 @@ cprintf("kern_pgdir: 0x%x\n", kern_pgdir);
 	for(; num[0]<=num[1]; num[0] += PGSIZE) {
 cprintf("num[0]: 0x%x\n", num[0]);
 		unsigned int _pte;
-		struct PageInfo *pageofva = page_lookup(kern_pgdir, num[0], (pte_t **)(&_pte));
+		struct PageInfo *pageofva = page_lookup(kern_pgdir, (void *)num[0], (pte_t **)(&_pte));
 
 		if(!pageofva) {
 			cprintf("0x%x: There is no physical page here.\n");
