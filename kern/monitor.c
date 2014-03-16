@@ -127,17 +127,17 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 	// Show the mappings
 	for(; num[0]<=num[1]; num[0] += PGSIZE) {
 		unsigned int pte;
-		struct PageInfo *pageofva = page_lookup(kern_pgdir, num[0], (pte_t **)(&pte));
+		struct PageInfo *pageofva = page_lookup(kern_pgdir, &num[0], (pte_t **)(&pte));
 
 		if(!pageofva) {
 			cprintf("0x%x: There is no physical page here.");
 			continue;
 		}
 
-		unsigned int perm = (unsigned int) (*pte - PTE_ADDR(pte));
+		unsigned int perm = (unsigned int) (pte - PTE_ADDR(pte));
 
 		cprintf("0x%x: physical address - 0x%x, permission bits: 0x%x", 
-			PTE_ADDR(pte)), perm);
+			PTE_ADDR(pte), perm);
 	}
 	return 0;
 }
