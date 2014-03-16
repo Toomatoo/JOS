@@ -112,9 +112,9 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 
 
 int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
-	if(argv > 3)
+	if(argc > 3)
 		return -1;
-	
+
 	extern pde_t *kern_pgdir;
 	unsigned int num[2];
 
