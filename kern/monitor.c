@@ -130,13 +130,13 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 		struct PageInfo *pageofva = page_lookup(kern_pgdir, &num[0], (pte_t **)(&pte));
 
 		if(!pageofva) {
-			cprintf("0x%x: There is no physical page here.");
+			cprintf("0x%x: There is no physical page here.\n");
 			continue;
 		}
 
 		unsigned int perm = (unsigned int) (pte - PTE_ADDR(pte));
 
-		cprintf("0x%x: physical address - 0x%x, permission bits: 0x%x", 
+		cprintf("0x%x: physical address - 0x%x, permission bits: 0x%x\n", 
 			PTE_ADDR(pte), perm);
 	}
 	return 0;
