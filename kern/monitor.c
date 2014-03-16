@@ -137,7 +137,7 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 		unsigned int perm = (unsigned int) (pte - PTE_ADDR(pte));
 
 		cprintf("0x%x: physical address - 0x%x, permission bits: 0x%x\n", 
-			PTE_ADDR(pte), perm);
+			num[0], PTE_ADDR(pte), perm);
 	}
 	return 0;
 }
