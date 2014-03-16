@@ -146,7 +146,7 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 
 int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
 	// instruction format: changepermission [-option] [vitual address] [perm]
-	if(agrc != 4 && argc != 3)
+	if(argc != 4 && argc != 3)
 		return -1
 
 	extern pde_t *kern_pgdir;
@@ -159,12 +159,12 @@ int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
 
 	unsigned int perm;
 	// set: set the permission bits completely to perm
-	if(strcmp(argv, "-set") == 0) {
+	if(strcmp(argv[1], "-set") == 0) {
 		perm = 0xfffff000 + strtol(argv[3], NULL, 16);
 		
 	}
 	// clear: clear all the permission bits
-	if(strcmp(argv, "-clear") == 0) {
+	if(strcmp(argv[1], "-clear") == 0) {
 		perm = 0xfffff000;
 	}
 
