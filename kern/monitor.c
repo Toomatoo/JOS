@@ -128,13 +128,15 @@ cprintf("kern_pgdir: 0x%x\n", kern_pgdir);
 	// Show the mappings
 	for(; num[0]<=num[1]; num[0] += PGSIZE) {
 cprintf("num[0]: 0x%x\n", num[0]);
-		unsigned int pte;
-		struct PageInfo *pageofva = page_lookup(kern_pgdir, &num[0], (pte_t **)(&pte));
+		unsigned int _pte;
+		struct PageInfo *pageofva = page_lookup(kern_pgdir, &num[0], (pte_t **)(&_pte));
 
 		if(!pageofva) {
 			cprintf("0x%x: There is no physical page here.\n");
 			continue;
 		}
+cprintf("pte: 0x%x\n", _pte);
+		pte_t pte = *((pte_t *)_pte);
 cprintf("pte: 0x%x\n", pte);
 		unsigned int perm = (unsigned int) (pte - PTE_ADDR(pte));
 
