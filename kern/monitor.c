@@ -120,7 +120,7 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 
 	num[0] = strtol(argv[1], NULL, 16);
 	num[1] = strtol(argv[2], NULL, 16);
-	cprintf("%x %x\n", num[0], num[1]);
+	cprintf("%d %d\n", num[0], num[1]);
 	return 0;
 }
 /***** Kernel monitor command interpreter *****/
