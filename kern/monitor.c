@@ -12,6 +12,7 @@
 #include <kern/console.h>
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
+#include <kern/pmap.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
@@ -112,15 +113,32 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 
 
 int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
+	// The instruction 'showmappings' must be attached with 2 arguments
 	if(argc > 3)
 		return -1;
 
+	// Get the 2 arguments
 	extern pde_t *kern_pgdir;
 	unsigned int num[2];
 
 	num[0] = strtol(argv[1], NULL, 16);
 	num[1] = strtol(argv[2], NULL, 16);
-	cprintf("%d %d\n", num[0], num[1]);
+
+	// Show the mappings
+	for(; num[0]<=num[1]; num[0] += PGSIZE) {
+		unsigned int pte;
+		struct PageInfo *pageofva = page_lookup(kern_pgdir, num[0], (pte_t **)(&pte));
+
+		if(!pageofva) {
+			cprintf("0x%x: There is no physical page here.");
+			continue;
+		}
+
+		unsigned int perm = (unsigned int) (*pte - PTE_ADDR(pte));
+
+		cprintf("0x%x: physical address - 0x%x, permission bits: 0x%x", 
+			PTE_ADDR(pte)), perm);
+	}
 	return 0;
 }
 /***** Kernel monitor command interpreter *****/
