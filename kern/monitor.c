@@ -147,7 +147,7 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
 	// instruction format: changepermission [-option] [vitual address] [perm]
 	if(argc != 4 && argc != 3)
-		return -1
+		return -1;
 
 	extern pde_t *kern_pgdir;
 	unsigned int num = strtol(argv[2], NULL, 16);
