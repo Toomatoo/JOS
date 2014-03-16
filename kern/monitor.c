@@ -126,6 +126,7 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 
 	// Show the mappings
 	for(; num[0]<=num[1]; num[0] += PGSIZE) {
+cprintf("num[0]: 0x%x\n", num[0]);
 		unsigned int pte;
 		struct PageInfo *pageofva = page_lookup(kern_pgdir, &num[0], (pte_t **)(&pte));
 
@@ -133,7 +134,7 @@ int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
 			cprintf("0x%x: There is no physical page here.\n");
 			continue;
 		}
-
+cprintf("pte: 0x%x\n", pte);
 		unsigned int perm = (unsigned int) (pte - PTE_ADDR(pte));
 
 		cprintf("0x%x: physical address - 0x%x, permission bits: 0x%x\n", 
