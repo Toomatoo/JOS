@@ -220,7 +220,7 @@ int mon_dump(int argc, char **argv, struct Trapframe *tf) {
 			unsigned int _pte;
 			struct PageInfo *pageofva = page_lookup(kern_pgdir, 
 				(void *)ROUNDDOWN(addr + i*4, PGSIZE), (pte_t **)(&_pte));
-			if(_pte && (*(pte *)_pte&PTE_P))
+			if(_pte && (*(pte_t *)_pte&PTE_P))
 				cprintf("0x%08x ", *(uint32_t *)(addr + i*4));
 			else
 				cprintf("---- ");
