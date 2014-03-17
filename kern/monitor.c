@@ -220,7 +220,7 @@ int mon_dump(int argc, char **argv, struct Trapframe *tf) {
 			unsigned int _pte;
 			struct PageInfo *pageofva = page_lookup(kern_pgdir, 
 				(void *)ROUNDDOWN(addr + i*4, PGSIZE), (pte_t **)(&_pte));
-			if(pte && (*pte&PTE_P))
+			if(_pte && (*(pte *)_pte&PTE_P))
 				cprintf("0x%08x ", *(uint32_t *)(addr + i*4));
 			else
 				cprintf("---- ");
@@ -233,14 +233,14 @@ int mon_dump(int argc, char **argv, struct Trapframe *tf) {
 		for(i=0; i<len; i++) {
 			if(i % 4 == 0)
 				cprintf("Virtual Address 0x%08x: ", addr + i*4);
-			if(addr >= PADDR((void *)pages && addr < PADDR((void *)pages + PTSIZE)
-				cprintf("0x%08x ", *(uint32_t *)(addr - PADDR((void *)pages + UPAGES));
-			else if(addr >= PADDR((void *)bootstack && addr < PADDR((void *)bootstack + KSTKSIZE)
+			if(addr >= PADDR((void *)pages) && addr < PADDR((void *)pages + PTSIZE))
+				cprintf("0x%08x ", *(uint32_t *)(addr - PADDR((void *)pages + UPAGES)));
+			else if(addr >= PADDR((void *)bootstack) && addr < PADDR((void *)bootstack + KSTKSIZE))
 				cprintf("0x%08x ", 
-					*(uint32_t *)(addr - PADDR((void *)bootstack + UPAGES + KSTACKTOP-KSTKSIZE));
+					*(uint32_t *)(addr - PADDR((void *)bootstack) + UPAGES + KSTACKTOP-KSTKSIZE));
 			else if(addr >= 0 && addr < ~KERNBASE+1)
 				cprintf("0x%08x ", 
-					*(uint32_t *)(addr + KERNBASE);
+					*(uint32_t *)(addr + KERNBASE));
 			else 
 				cprintf("---- ");
 			if(i % 4 == 3)
