@@ -211,7 +211,7 @@ int mon_dump(int argc, char **argv, struct Trapframe *tf) {
 	unsigned int addr = strtol(argv[2], NULL, 16);
 	unsigned int len = strtol(argv[3], NULL, 16);
 
-	if(argv[1][0] == 'v') {
+	if(argv[1][1] == 'v') {
 		int i;
 		for(i=0; i<len; i++) {
 			if(i % 4 == 0)
@@ -228,7 +228,7 @@ int mon_dump(int argc, char **argv, struct Trapframe *tf) {
 				cprintf("\n");
 		}
 	}
-	if(argv[1][0] == 'p') {
+	if(argv[1][1] == 'p') {
 		int i;
 		for(i=0; i<len; i++) {
 			if(i % 4 == 0)
