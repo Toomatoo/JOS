@@ -31,6 +31,8 @@ static struct Command commands[] = {
 	{ "showmappings", "Displaythe physical page mappings at a range of virtual space", mon_showmappings},
 	{ "changepermission", "Set, clear or change the permissions of any mapping in the current address space.", 
 		mon_changepermission},
+	{ "dump", "Dump the contents of a range of memory given either a virtual or physical address range.", 
+		mon_dump},
 };
 #define NCOMMANDS (sizeof(commands)/sizeof(commands[0]))
 
@@ -158,23 +160,93 @@ int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
 		return -1;
 
 	unsigned int perm = 0;
-	*((pte_t *)_pte) = *((pte_t *)_pte) & 0xfffff000;
+	
 	// set: set the permission bits completely to perm
 	if(strcmp(argv[1], "-set") == 0) {
 		perm = strtol(argv[3], NULL, 16) | PTE_P;
-		
+		*((pte_t *)_pte) = *((pte_t *)_pte) & 0xfffff000;
+		*((pte_t *)_pte) = *((pte_t *)_pte) + perm;
 	}
 	// clear: clear all the permission bits
 	if(strcmp(argv[1], "-clear") == 0) {
 		perm = 1;
+		*((pte_t *)_pte) = *((pte_t *)_pte) & 0xfffff000;
+		*((pte_t *)_pte) = *((pte_t *)_pte) + perm;
 	}
-
-	*((pte_t *)_pte) = *((pte_t *)_pte) + perm;
+	// change
+	if(strcmp(argv[1], "-change") == 0) {
+		if(strcmp(argv[3], "PTE_P") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_P;
+		if(strcmp(argv[3], "PTE_W") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_W;
+		if(strcmp(argv[3], "PTE_PWT") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_PWT;
+		if(strcmp(argv[3], "PTE_U") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_U;
+		if(strcmp(argv[3], "PTE_PCD") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_PCD;
+		if(strcmp(argv[3], "PTE_A") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_A;
+		if(strcmp(argv[3], "PTE_D") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_D;
+		if(strcmp(argv[3], "PTE_PS") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_PS;
+		if(strcmp(argv[3], "PTE_G") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_G;
+	}
+	
 
 	// print the result of permission bits
 	cprintf("0x%x permission bits: 0x%x\n", 
 		num, perm);
 
+	return 0;
+}
+
+int mon_dump(int argc, char **argv, struct Trapframe *tf) {
+	// instruction format: dump [-option] [address] [length]
+	if(argc != 4)
+		return -1;
+	
+	unsigned int addr = strtol(argv[2], NULL, 16);
+	unsigned int len = strtol(argv[3], NULL, 16);
+
+	if(argv[1][0] == 'v') {
+		int i;
+		for(i=0; i<len; i++) {
+			if(i % 4 == 0)
+				cprintf("Virtual Address 0x%08x: ", addr + i*4);
+
+			unsigned int _pte;
+			struct PageInfo *pageofva = page_lookup(kern_pgdir, 
+				(void *)ROUNDDOWN(addr + i*4, PGSIZE), (pte_t **)(&_pte));
+			if(pte && (*pte&PTE_P))
+				cprintf("0x%08x ", *(uint32_t *)(addr + i*4));
+			else
+				cprintf("---- ");
+			if(i % 4 == 3)
+				cprintf("\n");
+		}
+	}
+	if(argv[1][0] == 'p') {
+		int i;
+		for(i=0; i<len; i++) {
+			if(i % 4 == 0)
+				cprintf("Virtual Address 0x%08x: ", addr + i*4);
+			if(addr >= PADDR((void *)pages && addr < PADDR((void *)pages + PTSIZE)
+				cprintf("0x%08x ", *(uint32_t *)(addr - PADDR((void *)pages + UPAGES));
+			else if(addr >= PADDR((void *)bootstack && addr < PADDR((void *)bootstack + KSTKSIZE)
+				cprintf("0x%08x ", 
+					*(uint32_t *)(addr - PADDR((void *)bootstack + UPAGES + KSTACKTOP-KSTKSIZE));
+			else if(addr >= 0 && addr < ~KERNBASE+1)
+				cprintf("0x%08x ", 
+					*(uint32_t *)(addr + KERNBASE);
+			else 
+				cprintf("---- ");
+			if(i % 4 == 3)
+				cprintf("\n");
+		}
+	}
 	return 0;
 }
 /***** Kernel monitor command interpreter *****/
