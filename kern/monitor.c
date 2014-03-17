@@ -232,15 +232,16 @@ int mon_dump(int argc, char **argv, struct Trapframe *tf) {
 		int i;
 		for(i=0; i<len; i++) {
 			if(i % 4 == 0)
-				cprintf("Virtual Address 0x%08x: ", addr + i*4);
-			if(addr >= PADDR((void *)pages) && addr < PADDR((void *)pages + PTSIZE))
-				cprintf("0x%08x ", *(uint32_t *)(addr - PADDR((void *)pages + UPAGES)));
-			else if(addr >= PADDR((void *)bootstack) && addr < PADDR((void *)bootstack + KSTKSIZE))
+				cprintf("Physical Address 0x%08x: ", addr + i*4);
+			unsigned int _addr = addr + i*4;
+			if(_addr >= PADDR((void *)pages) && _addr < PADDR((void *)pages + PTSIZE))
+				cprintf("0x%08x ", *(uint32_t *)(_addr - PADDR((void *)pages + UPAGES)));
+			else if(_addr >= PADDR((void *)bootstack) && _addr < PADDR((void *)bootstack + KSTKSIZE))
 				cprintf("0x%08x ", 
-					*(uint32_t *)(addr - PADDR((void *)bootstack) + UPAGES + KSTACKTOP-KSTKSIZE));
-			else if(addr >= 0 && addr < ~KERNBASE+1)
+					*(uint32_t *)(_addr - PADDR((void *)bootstack) + UPAGES + KSTACKTOP-KSTKSIZE));
+			else if(_addr >= 0 && _addr < ~KERNBASE+1)
 				cprintf("0x%08x ", 
-					*(uint32_t *)(addr + KERNBASE));
+					*(uint32_t *)(_addr + KERNBASE));
 			else 
 				cprintf("---- ");
 			if(i % 4 == 3)
