@@ -76,7 +76,10 @@
  *    USTABDATA ---->  +------------------------------+ 0x00200000        |
  *                     |       Empty Memory (*)       |                   |
  *    0 ------------>  +------------------------------+                 --+
- *
+ *******
+ * My view:
+ *		0xeebff000~
+ ********
  * (*) Note: The kernel ensures that "Invalid Memory" is *never* mapped.
  *     "Empty Memory" is normally unmapped, but user programs may map pages
  *     there if desired.  JOS user programs map pages temporarily at UTEMP.
@@ -158,6 +161,9 @@ typedef uint32_t pde_t;
  * will always be available at virtual address (UVPT + (UVPT >> PGSHIFT)), to
  * which uvpd is set in entry.S.
  */
+
+ // I can see the Lab 2
+
 extern volatile pte_t uvpt[];     // VA of "virtual page table"
 extern volatile pde_t uvpd[];     // VA of current page directory
 #endif
