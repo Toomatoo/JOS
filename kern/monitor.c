@@ -1,15 +1,18 @@
 // Simple command-line kernel monitor useful for
 // controlling the kernel and exploring the system interactively.
+// See
 
 #include <inc/stdio.h>
 #include <inc/string.h>
 #include <inc/memlayout.h>
 #include <inc/assert.h>
 #include <inc/x86.h>
+#include <inc/stdarg.h>
 
 #include <kern/console.h>
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
+#include <kern/pmap.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
@@ -24,6 +27,12 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
+	{ "backtrace", "Display a procedure of backtrace", mon_backtrace },
+	{ "showmappings", "Displaythe physical page mappings at a range of virtual space", mon_showmappings},
+	{ "changepermission", "Set, clear or change the permissions of any mapping in the current address space.", 
+		mon_changepermission},
+	{ "dump", "Dump the contents of a range of memory given either a virtual or physical address range.", 
+		mon_dump},
 };
 #define NCOMMANDS (sizeof(commands)/sizeof(commands[0]))
 
@@ -58,12 +67,189 @@ mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
-	// Your code here.
+	// Lab1 Ex11.	
+	uint32_t *ebp, *eip;
+	uint32_t arg0, arg1, arg2, arg3, arg4;
+
+	ebp = (uint32_t*) read_ebp();
+ 	eip = (uint32_t*) ebp[1];
+ 	arg0 = ebp[2];
+ 	arg1 = ebp[3];
+	arg2 = ebp[4];
+	arg3 = ebp[5];
+	arg4 = ebp[6];
+
+	cprintf ("Stack backtrace:\n");
+
+	while (ebp != 0) {
+		cprintf ("  ebp %08x eip %08x args %08x %08x %08x %08x %08x\n", ebp, eip, 
+			arg0, arg1, arg2, arg3, arg4);
+
+		struct Eipdebuginfo info;
+		if (debuginfo_eip((uintptr_t)eip, &info) < 0)
+			return -1;
+		
+		char eip_file[50]; 
+		strcpy(eip_file, info.eip_file);
+
+		int eip_line = info.eip_line;
+
+		char eip_fn_name[50];
+		strncpy(eip_fn_name, info.eip_fn_name, info.eip_fn_namelen); 
+		eip_fn_name[info.eip_fn_namelen] = '\0';
+		
+		uintptr_t eip_fn_line = (uintptr_t)eip - info.eip_fn_addr;
+
+
+		cprintf ("         %s:%d: %s+%u\n", eip_file, eip_line, 
+			eip_fn_name, eip_fn_line);
+
+		ebp = (uint32_t*) ebp[0];
+		eip = (uint32_t*) ebp[1];
+		arg0 = ebp[2];
+		arg1 = ebp[3];
+		arg2 = ebp[4];
+		arg3 = ebp[5];
+		arg4 = ebp[6];
+	}
 	return 0;
 }
 
 
+int mon_showmappings(int argc, char **argv, struct Trapframe *tf) {
+	// The instruction 'showmappings' must be attached with 2 arguments
+	if(argc != 3)
+		return -1;
 
+	// Get the 2 arguments
+	extern pde_t *kern_pgdir;
+	unsigned int num[2];
+
+	num[0] = strtol(argv[1], NULL, 16);
+	num[1] = strtol(argv[2], NULL, 16);
+
+	// Show the mappings
+	for(; num[0]<=num[1]; num[0] += PGSIZE) {
+		unsigned int _pte;
+		struct PageInfo *pageofva = page_lookup(kern_pgdir, (void *)num[0], (pte_t **)(&_pte));
+
+		if(!pageofva) {
+			cprintf("0x%x: There is no physical page here.\n");
+			continue;
+		}
+		pte_t pte = *((pte_t *)_pte);
+		unsigned int perm = (unsigned int) (pte - PTE_ADDR(pte));
+
+		cprintf("0x%x: physical address-0x%x, permission bits-0x%x\n", 
+			num[0], PTE_ADDR(pte), perm);
+	}
+	return 0;
+}
+
+int mon_changepermission(int argc, char **argv, struct Trapframe *tf) {
+	// instruction format: changepermission [-option] [vitual address] [perm]
+	if(argc != 4 && argc != 3)
+		return -1;
+
+	extern pde_t *kern_pgdir;
+	unsigned int num = strtol(argv[2], NULL, 16);
+
+	unsigned int _pte;
+	struct PageInfo *pageofva = page_lookup(kern_pgdir, (void *)num, (pte_t **)(&_pte));
+	if(!pageofva)
+		return -1;
+
+	unsigned int perm = 0;
+	
+	// set: set the permission bits completely to perm
+	if(strcmp(argv[1], "-set") == 0) {
+		perm = strtol(argv[3], NULL, 16) | PTE_P;
+		*((pte_t *)_pte) = *((pte_t *)_pte) & 0xfffff000;
+		*((pte_t *)_pte) = *((pte_t *)_pte) + perm;
+	}
+	// clear: clear all the permission bits
+	if(strcmp(argv[1], "-clear") == 0) {
+		perm = 1;
+		*((pte_t *)_pte) = *((pte_t *)_pte) & 0xfffff000;
+		*((pte_t *)_pte) = *((pte_t *)_pte) + perm;
+	}
+	// change
+	if(strcmp(argv[1], "-change") == 0) {
+		if(strcmp(argv[3], "PTE_P") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_P;
+		if(strcmp(argv[3], "PTE_W") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_W;
+		if(strcmp(argv[3], "PTE_PWT") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_PWT;
+		if(strcmp(argv[3], "PTE_U") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_U;
+		if(strcmp(argv[3], "PTE_PCD") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_PCD;
+		if(strcmp(argv[3], "PTE_A") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_A;
+		if(strcmp(argv[3], "PTE_D") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_D;
+		if(strcmp(argv[3], "PTE_PS") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_PS;
+		if(strcmp(argv[3], "PTE_G") == 0)
+			*((pte_t *)_pte) = *((pte_t *)_pte) ^ PTE_G;
+	}
+	
+
+	// print the result of permission bits
+	cprintf("0x%x permission bits: 0x%x\n", 
+		num, perm);
+
+	return 0;
+}
+
+int mon_dump(int argc, char **argv, struct Trapframe *tf) {
+	// instruction format: dump [-option] [address] [length]
+	if(argc != 4)
+		return -1;
+	
+	unsigned int addr = strtol(argv[2], NULL, 16);
+	unsigned int len = strtol(argv[3], NULL, 16);
+
+	if(argv[1][1] == 'v') {
+		int i;
+		for(i=0; i<len; i++) {
+			if(i % 4 == 0)
+				cprintf("Virtual Address 0x%08x: ", addr + i*4);
+
+			unsigned int _pte;
+			struct PageInfo *pageofva = page_lookup(kern_pgdir, 
+				(void *)ROUNDDOWN(addr + i*4, PGSIZE), (pte_t **)(&_pte));
+			if(_pte && (*(pte_t *)_pte&PTE_P))
+				cprintf("0x%08x ", *(uint32_t *)(addr + i*4));
+			else
+				cprintf("---- ");
+			if(i % 4 == 3)
+				cprintf("\n");
+		}
+	}
+	if(argv[1][1] == 'p') {
+		int i;
+		for(i=0; i<len; i++) {
+			if(i % 4 == 0)
+				cprintf("Physical Address 0x%08x: ", addr + i*4);
+			unsigned int _addr = addr + i*4;
+			if(_addr >= PADDR((void *)pages) && _addr < PADDR((void *)pages + PTSIZE))
+				cprintf("0x%08x ", *(uint32_t *)(_addr - PADDR((void *)pages + UPAGES)));
+			else if(_addr >= PADDR((void *)bootstack) && _addr < PADDR((void *)bootstack + KSTKSIZE))
+				cprintf("0x%08x ", 
+					*(uint32_t *)(_addr - PADDR((void *)bootstack) + UPAGES + KSTACKTOP-KSTKSIZE));
+			else if(_addr >= 0 && _addr < ~KERNBASE+1)
+				cprintf("0x%08x ", 
+					*(uint32_t *)(_addr + KERNBASE));
+			else 
+				cprintf("---- ");
+			if(i % 4 == 3)
+				cprintf("\n");
+		}
+	}
+	return 0;
+}
 /***** Kernel monitor command interpreter *****/
 
 #define WHITESPACE "\t\r\n "
@@ -113,9 +299,15 @@ monitor(struct Trapframe *tf)
 {
 	char *buf;
 
-	cprintf("Welcome to the JOS kernel monitor!\n");
-	cprintf("Type 'help' for a list of commands.\n");
-
+	cprintf("%CredWelcome to the %CgrnJOS kernel %Cpurmonitor!\n");
+	cprintf("%CredType %Cgrn'help' for a list of %Cpurcommands.\n");
+	
+	// Lab1 Ex8 Q4
+	//unsigned int i = 0x00646c72;
+    //cprintf("H%x Wo%s\n", 57616, &i);
+    
+    // Lab1 Ex8 Q5
+    //cprintf("x=%d y=%d\n", 3);
 
 	while (1) {
 		buf = readline("K> ");

@@ -1,5 +1,11 @@
 /* See COPYRIGHT for copyright information. */
 
+/**
+	@author Siyuan
+	This file is mainly about methods of transmission between physical addr and 
+	vitual addr, between page number and physical address
+*/
+
 #ifndef JOS_KERN_PMAP_H
 #define JOS_KERN_PMAP_H
 #ifndef JOS_KERNEL
