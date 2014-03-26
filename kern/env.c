@@ -367,7 +367,7 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 	// switch back to kernel page directory
 	lcr3(PADDR(kern_pgdir));
 
-	e->env_tf.tf_eip = (uintptr_t)elf->e_entry;
+	(e->env_tf).tf_eip = (uintptr_t)(elf->e_entry);
 
 	// Now map one page for the program's initial stack
 	// at virtual address USTACKTOP - PGSIZE.
