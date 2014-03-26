@@ -237,7 +237,7 @@ mem_init(void)
 		kern_pgdir,
 		UENVS,
 		ROUNDUP(NENV*sizeof(struct Env), PGSIZE),
-		PADDR(void *)envs,
+		PADDR((void *)envs),
 		PTE_U | PTE_P);
 
 	//////////////////////////////////////////////////////////////////////
