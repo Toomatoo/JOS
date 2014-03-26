@@ -346,7 +346,7 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 	//  What?  (See env_run() and env_pop_tf() below.)
 
 	// LAB 3: Your code here.
-	struct ELF *elf = (struct ELF *)binary;
+	struct ELF *elf = (struct Elf *)binary;
 	struct Proghdr *ph, *eph;
 
 	if(elf->e_magic != ELF_MAGIC)
