@@ -4,32 +4,36 @@
 #define ELF_MAGIC 0x464C457FU	/* "\x7FELF" in little endian */
 
 struct Elf {
-	uint32_t e_magic;	// must equal ELF_MAGIC
-	uint8_t e_elf[12];
-	uint16_t e_type;
-	uint16_t e_machine;
-	uint32_t e_version;
-	uint32_t e_entry;
-	uint32_t e_phoff;
-	uint32_t e_shoff;
-	uint32_t e_flags;
-	uint16_t e_ehsize;
-	uint16_t e_phentsize;
-	uint16_t e_phnum;
-	uint16_t e_shentsize;
-	uint16_t e_shnum;
+	uint32_t e_magic;		// must equal ELF_MAGIC
+	uint8_t e_elf[12];		// some information
+	uint16_t e_type;		// format of the ELF
+	uint16_t e_machine;		// machine architecture
+	uint32_t e_version;		// version of ELF
+	uint32_t e_entry;		// entry of program
+
+	uint32_t e_phoff;		// offset to Program Header Table
+	uint32_t e_shoff;		// offset to Section Header Table
+	
+	uint32_t e_flags;		// 
+	uint16_t e_ehsize;		// size of ELF header
+
+	uint16_t e_phentsize;	// size of Program Header Table entry
+	uint16_t e_phnum;		// sum of Program Header Table entry
+
+	uint16_t e_shentsize;	// size of Section Header Table entry
+	uint16_t e_shnum;		// sum of Section Header Table entry
 	uint16_t e_shstrndx;
 };
 
 struct Proghdr {
-	uint32_t p_type;
-	uint32_t p_offset;
-	uint32_t p_va;
-	uint32_t p_pa;
-	uint32_t p_filesz;
-	uint32_t p_memsz;
-	uint32_t p_flags;
-	uint32_t p_align;
+	uint32_t p_type;		// type of segment
+	uint32_t p_offset;		// offset to segment
+	uint32_t p_va;			// load virtual address
+	uint32_t p_pa;			// load physical address
+	uint32_t p_filesz;		// size of map in disk
+	uint32_t p_memsz;		// size of map in memory
+	uint32_t p_flags;		// some flag bits
+	uint32_t p_align;		// align
 };
 
 struct Secthdr {
