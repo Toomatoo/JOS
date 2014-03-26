@@ -116,13 +116,13 @@ env_init(void)
 {
 	// Set up envs array
 	// LAB 3: Your code here.
-	envs[0].env_ids = 0;
+	envs[0].env_id = 0;
 	env_free_list = envs;
 	struct Env *_env = env_free_list;
 
 	int i;
 	for(i=1; i<NENV; i++) {
-		envs[i].env_ids = 0;
+		envs[i].env_id = 0;
 		_env->env_link = &envs[i];
 		_env = _env->env_link;
 	}
@@ -190,7 +190,7 @@ env_setup_vm(struct Env *e)
 
 	/*************************** LAB 3: Your code here.***************************/
 	p->pp_ref ++;
-	e->env_pgdir = (pde_t)page2kva(p);
+	e->env_pgdir = (pde_t *)page2kva(p);
 	memcpy(e->env_pgdir, kern_pgdir, PGSIZE);
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
@@ -282,11 +282,12 @@ region_alloc(struct Env *e, void *va, size_t len)
 
 	// Aplly for physical pages
 	// Map the pages into page directory
+	int i;
 	void *_va = ROUNDDOWN(va, PGSIZE);
 	for(i=0; i<ROUNDUP(len, PGSIZE)/PGSIZE; i++) {
-		PageInfo *p = page_alloc(0);
+		struct PageInfo *p = page_alloc(0);
 		if(!p)
-			panic("region_alloc failed!")
+			panic("region_alloc failed!");
 		page_insert(e->env_pgdir, p, _va+i*PGSIZE, PTE_W | PTE_U);
 	}
 }
@@ -510,7 +511,7 @@ env_run(struct Env *e)
 
 	// LAB 3: Your code here.
 	if(!curenv && curenv->env_status == ENV_RUNNING) {
-		urenv->env_status = ENV_RUNNABLE;
+		curenv->env_status = ENV_RUNNABLE;
 	}
 	curenv = e;
 	curenv->env_status = ENV_RUNNING;
@@ -518,6 +519,6 @@ env_run(struct Env *e)
 
 	lcr3(PADDR(curenv->env_pgdir));
 
-	env_pop_tf(curenv->env_tf);
+	env_pop_tf(&(curenv->env_tf));
 }
 
