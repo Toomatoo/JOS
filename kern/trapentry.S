@@ -42,7 +42,7 @@
 	jmp _alltraps
 
 
-#define ec(name, num)\
+#define ec_entry(name, num)\
 .data;\
 	.long name;\
 .text;\
@@ -53,7 +53,7 @@ name:\
 	pushl $(num);\
 	jmp _alltraps
 
-#define noec(name, num)\
+#define noec_entry(name, num)\
 .data;\
 	.long name;\
 .text;\
@@ -65,7 +65,7 @@ name:\
 	pushl $(num);\
 	jmp _alltraps
 
-#define zhanwei()\
+#define reserved_entry()\
 .data;\
 	.long 0
 
@@ -77,27 +77,27 @@ funs:
 /*
  * Challenge: my code here
  */
-	noec(th0, 0)
-	noec(th1, 1)
-	zhanwei()
-	noec(th3, 3)
-	noec(th4, 4)
-	noec(th5, 5)
-	noec(th6, 6)
-	noec(th7, 7)
-	ec(th8, 8)
-	noec(th9, 9)
-	ec(th10, 10)
-	ec(th11, 11)
-	ec(th12, 12)
-	ec(th13, 13)
-	ec(th14, 14)
-	zhanwei()
-	noec(th16, 16)
+	noec_entry(th0, 0)
+	noec_entry(th1, 1)
+	reserved_entry()
+	noec_entry(th3, 3)
+	noec_entry(th4, 4)
+	noec_entry(th5, 5)
+	noec_entry(th6, 6)
+	noec_entry(th7, 7)
+	ec_entry(th8, 8)
+	noec_entry(th9, 9)
+	ec_entry(th10, 10)
+	ec_entry(th11, 11)
+	ec_entry(th12, 12)
+	ec_entry(th13, 13)
+	ec_entry(th14, 14)
+	reserved_entry()
+	noec_entry(th16, 16)
 .data
 	.space 124
 .text
-	noec(th48, 48)
+	noec_entry(th48, 48)
 
 /*
  * Lab 3: Your code here for _alltraps
@@ -132,4 +132,3 @@ _alltraps:
 	# TRAPHANDLER(th13, 13)
 	# TRAPHANDLER(th14, 14)
 	# TRAPHANDLER_NOEC(th16, 16)
-	
