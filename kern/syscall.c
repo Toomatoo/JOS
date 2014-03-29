@@ -72,7 +72,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	int ret = 0;
 
 	if(syscallno == SYS_cputs)
-		sys_cputs(a1, a2);
+		sys_cputs((char *)a1, a2);
 	
 	else if(syscallno == SYS_cgetc)
 		ret = sys_cgetc();
