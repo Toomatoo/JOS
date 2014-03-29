@@ -272,8 +272,7 @@ page_fault_handler(struct Trapframe *tf)
 void
 breakpoint_handler(struct Trapframe *tf) {
 	print_trapframe(tf);
-	asm volatile("int3");
-	env_destroy(curenv);
+	monitor(tf);
 	return;
 }
 
