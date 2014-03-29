@@ -192,7 +192,7 @@ trap_dispatch(struct Trapframe *tf)
 
 	if(tf->tf_trapno == T_BRKPT) {
 		cprintf("BREAK POINT!\n");
-		asm volatile("int3");
+		breakpoint_handler(tf);
 		return;
 	}
 	// Unexpected trap: The user process or the kernel has a bug.
@@ -267,5 +267,13 @@ page_fault_handler(struct Trapframe *tf)
 		curenv->env_id, fault_va, tf->tf_eip);
 	print_trapframe(tf);
 	env_destroy(curenv);
+}
+
+void
+breakpoint_handler(struct Trapframe *tf) {
+	print_trapframe(tf);
+	while(true)
+		asm volatile("int3");
+	return;
 }
 
