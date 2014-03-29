@@ -189,6 +189,12 @@ trap_dispatch(struct Trapframe *tf)
 		page_fault_handler(tf);
 		return;
 	}
+
+	if(tf->tf_trapno == T_BRKPT) {
+		cprintf("BREAK POINT!\n");
+		asm volatile("int3");
+		return;
+	}
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
