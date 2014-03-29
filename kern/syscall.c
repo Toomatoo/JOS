@@ -71,13 +71,17 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// LAB 3: Your code here.
 	switch (syscallno){
 		case SYS_cputs:
+			cprintf("SYS_cputs\n");
 			sys_cputs((char*)a1, a2);
 			return 0;
 		case SYS_cgetc:
+			cprintf("SYS_cgetc\n");
 			return sys_cgetc();
 		case SYS_getenvid:
+			cprintf("SYS_getenvid\n");
 			return sys_getenvid();
 		case SYS_env_destroy:
+			cprintf("SYS_env_destroy\n");
 			return sys_env_destroy(a1);
 		default: 
 			return -E_INVAL;
