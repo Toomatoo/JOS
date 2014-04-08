@@ -269,17 +269,15 @@ mem_init(void)
 	// we just set up the mapping anyway.
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
-
-//COMPLICT!
-	// Initialize the SMP-related parts of the memory map
-	mem_init_mp();
-
 	boot_map_region(
  		kern_pgdir, 
 		KERNBASE, 
 		~KERNBASE+1, 
 		(physaddr_t)0,
 		PTE_W);
+
+	// Initialize the SMP-related parts of the memory map
+	mem_init_mp();
 
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
@@ -401,6 +399,8 @@ page_init(void)
 			continue;	
 		}
 		
+		if(page2pa(&pages[i]) == MPENTRY_PADDR)
+			continue;
 		// others is free
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
@@ -709,7 +709,21 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+
+	if(base + ROUNDUP(size, PGSIZE) >= MMIOLIM)
+		panic("mmio_map_region: above MMIOLIM");
+	boot_map_region(
+ 		kern_pgdir, 
+		base, 
+		ROUNDUP(size, PGSIZE), 
+		pa,
+		PTE_PCD|PTE_PWT|PTE_W);
+
+	void *ret = (void *)base;
+
+	base += ROUNDUP(size, PGSIZE);
+
+	return ret;
 }
 
 static uintptr_t user_mem_check_addr;
