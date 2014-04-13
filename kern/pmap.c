@@ -128,7 +128,6 @@ boot_alloc(uint32_t n)
 	// bytes.  Doesn't initialize the memory.  Returns a kernel virtual address.
 	else if (n > 0) {
 		size_t srequest = (size_t)ROUNDUP((char *)n, PGSIZE);
-		cprintf("Request %u\n", srequest/PGSIZE);
 
 		if(npages_left < srequest/PGSIZE) {
 			panic("Out of memory!\n");
@@ -326,7 +325,17 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
+	int i=0;
+	for(; i<NCPU; i++) {
+		uintptr_t kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
 
+		boot_map_region(
+	 		kern_pgdir, 
+			kstacktop_i - KSTKSIZE, 
+			KSTKSIZE, 
+			PADDR((void *)percpu_kstacks[i]),
+			PTE_W);
+	}
 }
 
 // --------------------------------------------------------------
@@ -459,6 +468,7 @@ page_decref(struct PageInfo* pp)
 {
 	if (--pp->pp_ref == 0)
 		page_free(pp);
+//cprintf("page_decref: success!\n");
 }
 
 // Given 'pgdir', a pointer to a page directory, pgdir_walk returns
@@ -710,20 +720,17 @@ mmio_map_region(physaddr_t pa, size_t size)
 	//
 	// Your code here:
 
-	if(base + ROUNDUP(size, PGSIZE) >= MMIOLIM)
-		panic("mmio_map_region: above MMIOLIM");
-	boot_map_region(
- 		kern_pgdir, 
-		base, 
-		ROUNDUP(size, PGSIZE), 
-		pa,
-		PTE_PCD|PTE_PWT|PTE_W);
+    size = ROUNDUP(pa+size, PGSIZE);
+    pa = ROUNDDOWN(pa, PGSIZE);
+    size -= pa;
 
-	void *ret = (void *)base;
-
-	base += ROUNDUP(size, PGSIZE);
-
-	return ret;
+    if (base+size >= MMIOLIM) 
+    	panic("not enough memory");
+    
+    boot_map_region(kern_pgdir, base, size, pa, PTE_PCD|PTE_PWT|PTE_W);
+    
+    base += size;
+    return (void*) (base - size);
 }
 
 static uintptr_t user_mem_check_addr;
@@ -1065,9 +1072,7 @@ check_page(void)
 
 	// should be able to map pp2 at PGSIZE because pp0 is already allocated for page table
 	assert(page_insert(kern_pgdir, pp2, (void*) PGSIZE, PTE_W) == 0);
-cprintf("%x %x %x\n",kern_pgdir, PTE_ADDR(kern_pgdir[0]), page2pa(pp0));
 
-cprintf("%x %x\n", PTE_ADDR(*((pte_t *)(PTE_ADDR(kern_pgdir[0]) + PTX(PGSIZE)))), page2pa(pp2));
 	assert(check_va2pa(kern_pgdir, PGSIZE) == page2pa(pp2));
 	assert(pp2->pp_ref == 1);
 

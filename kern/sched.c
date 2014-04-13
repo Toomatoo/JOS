@@ -29,8 +29,64 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 4: Your code here.
+	/*
+	if(curenv != NULL) {
+		idle = curenv->env_link;
+	}
+	else {
+		idle = envs;	
+	}	
+
+//cprintf("****Get idle start\n");
+
+	int i;
+	bool found = false;
+//cprintf("**idle env_status: %x\n", envs[0].env_status);
+//cprintf("**idle env_status: %x\n", envs[1].env_status);
+	for(i=0; i<NENV; i++) {
+		// Check
+		if(idle->env_status == ENV_RUNNABLE) {
+			found = true;
+			break;
+		}
+//cprintf("**Continue finding\n");
+		// Go to the next
+		if(idle->env_link == NULL) {
+//cprintf("****back\n");
+			idle = &envs[0];
+		}
+		else
+			idle = idle->env_link;
+	}
+	// Did not find one, check for the current env
+//cprintf("****Found one!\n");
+	if(!found && curenv && curenv->env_status == ENV_RUNNING) {
+//cprintf("****run curenv!\n");
+		env_run(curenv);
+	}
+	// If found one, then run it.
+	if(found) {
+//cprintf("**Success to find one: \n");
+		env_run(idle);
+	}
+
+*/
+	int i, cur=0;
+	if (curenv) cur=ENVX(curenv->env_link->env_id);
+		else cur = 0;
+	for (i = 0; i < NENV; ++i) {
+		int j = (cur+i) % NENV;
+		if (envs[j].env_status == ENV_RUNNABLE) {
+			if (j == 1) 
+				cprintf("\n");
+			env_run(envs + j);
+		}
+	}
+	if (curenv && curenv->env_status == ENV_RUNNING)
+		env_run(curenv);
 
 	// sched_halt never returns
+cprintf("**Fail to find one\n");
 	sched_halt();
 }
 

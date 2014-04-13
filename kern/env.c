@@ -432,7 +432,7 @@ env_free(struct Env *e)
 	// Flush all mapped pages in the user portion of the address space
 	static_assert(UTOP % PTSIZE == 0);
 	for (pdeno = 0; pdeno < PDX(UTOP); pdeno++) {
-
+//cprintf("*****e->env_pgdir[pdeno]: up to now!\n");
 		// only look at mapped page tables
 		if (!(e->env_pgdir[pdeno] & PTE_P))
 			continue;
@@ -440,21 +440,22 @@ env_free(struct Env *e)
 		// find the pa and va of the page table
 		pa = PTE_ADDR(e->env_pgdir[pdeno]);
 		pt = (pte_t*) KADDR(pa);
-
+//cprintf("*****e entry: up to now!\n");
 		// unmap all PTEs in this page table
 		for (pteno = 0; pteno <= PTX(~0); pteno++) {
 			if (pt[pteno] & PTE_P)
 				page_remove(e->env_pgdir, PGADDR(pdeno, pteno, 0));
 		}
-
+//cprintf("*****e table: up to now!\n");
 		// free the page table itself
 		e->env_pgdir[pdeno] = 0;
 		page_decref(pa2page(pa));
 	}
-
+//cprintf("*****e->env_pgdir: up to now!\n");
 	// free the page directory
 	pa = PADDR(e->env_pgdir);
 	e->env_pgdir = 0;
+//cprintf("*****Get into page_decref!\n");
 	page_decref(pa2page(pa));
 
 	// return the environment to the free list
@@ -478,11 +479,11 @@ env_destroy(struct Env *e)
 		e->env_status = ENV_DYING;
 		return;
 	}
-
 	env_free(e);
 
 	if (curenv == e) {
 		curenv = NULL;
+cprintf("****destroy\n");
 		sched_yield();
 	}
 }
@@ -499,6 +500,7 @@ env_pop_tf(struct Trapframe *tf)
 {
 	// Record the CPU we are running on for user-space debugging
 	curenv->env_cpunum = cpunum();
+cprintf("**Start transfering\n");
 
 	__asm __volatile("movl %0,%%esp\n"
 		"\tpopal\n"
@@ -537,14 +539,16 @@ env_run(struct Env *e)
 	//	e->env_tf to sensible values.
 
 	// LAB 3: Your code here.
-	if(curenv && curenv->env_status == ENV_RUNNING) {
-		curenv->env_status = ENV_RUNNABLE;
+	if (curenv != e) {
+		if (curenv && curenv->env_status == ENV_RUNNING)
+			curenv->env_status = ENV_RUNNABLE;
+		curenv = e;
+		e->env_status = ENV_RUNNING;
+		e->env_runs++;
+		lcr3(PADDR(e->env_pgdir));
 	}
-	curenv = e;
-	curenv->env_status = ENV_RUNNING;
-	curenv->env_runs ++;
 
-	lcr3(PADDR(curenv->env_pgdir));
+	unlock_kernel();
 
 	env_pop_tf(&(curenv->env_tf));
 }
