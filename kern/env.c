@@ -270,6 +270,8 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	env_free_list = e->env_link;
 	*newenv_store = e;
 
+	e->env_tf.tf_eflags |= FL_IF;
+	
 	cprintf("[%08x] new env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 	return 0;
 }
@@ -500,7 +502,7 @@ env_pop_tf(struct Trapframe *tf)
 {
 	// Record the CPU we are running on for user-space debugging
 	curenv->env_cpunum = cpunum();
-cprintf("**Start transfering\n");
+//cprintf("**Start transfering\n");
 
 	__asm __volatile("movl %0,%%esp\n"
 		"\tpopal\n"

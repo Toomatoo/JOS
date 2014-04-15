@@ -114,6 +114,9 @@ trap_init(void)
 		}
 	SETGATE(idt[48], 0, GD_KT, funs[48], 3);
 
+	for (i = 0; i < 16; ++i)
+    	SETGATE(idt[IRQ_OFFSET+i], 0, GD_KT, funs[IRQ_OFFSET+i], 0);
+
 	// Per-CPU setup 
 	trap_init_percpu();
 }
@@ -240,7 +243,7 @@ trap_dispatch(struct Trapframe *tf)
 	}
 
 	if(tf->tf_trapno == T_SYSCALL) {
-		cprintf("SYSTEM CALL!\n");
+		//cprintf("SYSTEM CALL!\n");
 		tf->tf_regs.reg_eax = 
 			syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
 				tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
@@ -365,7 +368,30 @@ page_fault_handler(struct Trapframe *tf)
 	//   (the 'tf' variable points at 'curenv->env_tf').
 
 	// LAB 4: Your code here.
+	if (curenv->env_pgfault_upcall) {
+        struct UTrapframe *utf;
+        uintptr_t utf_addr;
+        // Locate the exception stack
+        if (UXSTACKTOP-PGSIZE<=tf->tf_esp && tf->tf_esp<=UXSTACKTOP-1)
+            utf_addr = tf->tf_esp - sizeof(struct UTrapframe) - 4;
+        else 
+            utf_addr = UXSTACKTOP - sizeof(struct UTrapframe);
+        user_mem_assert(curenv, (void*)utf_addr, 1, PTE_W);//1 is enough
+        utf = (struct UTrapframe *) utf_addr;
 
+        // Form the UTrapframe
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+
+        //Modify the env's trapframe to run the handler set before
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_pgfault_upcall;
+        curenv->env_tf.tf_esp = utf_addr;
+        env_run(curenv);
+    }
 	// Destroy the environment that caused the fault.
 	cprintf("[%08x] user fault va %08x ip %08x\n",
 		curenv->env_id, fault_va, tf->tf_eip);

@@ -142,7 +142,11 @@ static int
 sys_env_set_pgfault_upcall(envid_t envid, void *func)
 {
 	// LAB 4: Your code here.
-	
+	struct Env *e; 
+    int ret = envid2env(envid, &e, 1);
+    if (ret) return ret;    //bad_env
+    e->env_pgfault_upcall = func;
+    return 0;
 }
 
 // Allocate a page of memory and map it at 'va' with permission
@@ -350,20 +354,20 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// LAB 3: Your code here.
 	switch (syscallno){
 		case SYS_cputs:
-			cprintf("SYS_cputs\n");
+			//cprintf("SYS_cputs\n");
 			sys_cputs((char*)a1, a2);
 			return 0;
 		case SYS_cgetc:
-			cprintf("SYS_cgetc\n");
+			//cprintf("SYS_cgetc\n");
 			return sys_cgetc();
 		case SYS_getenvid:
-			cprintf("SYS_getenvid\n");
+			//cprintf("SYS_getenvid\n");
 			return sys_getenvid();
 		case SYS_env_destroy:
-			cprintf("SYS_env_destroy\n");
+			//cprintf("SYS_env_destroy\n");
 			return sys_env_destroy(a1);
 		case SYS_yield:
-			cprintf("SYS_yield\n");
+			//cprintf("SYS_yield\n");
 			sys_yield();
 
 		case SYS_exofork:
@@ -377,6 +381,10 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			return sys_page_alloc((envid_t)a1, (void *)a2, (int)a3);
 		case SYS_env_set_status:
 			return sys_env_set_status((envid_t)a1, (int)a2);
+
+		case SYS_env_set_pgfault_upcall:
+			return sys_env_set_pgfault_upcall((envid_t)a1, (void *)a2);
+
 		default: 
 			return -E_INVAL;
 	}

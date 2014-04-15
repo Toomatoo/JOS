@@ -95,6 +95,23 @@ funs:
 	ec_entry(th14, 14)
 	reserved_entry()
 	noec_entry(th16, 16)
+	noec_entry(th32, 32)
+    noec_entry(th33, 33)
+    noec_entry(th34, 34)
+    noec_entry(th35, 35)
+    noec_entry(th36, 36)
+    noec_entry(th37, 37)
+    noec_entry(th38, 38)
+    noec_entry(th39, 39)
+    noec_entry(th40, 40)
+    noec_entry(th41, 41)
+    noec_entry(th42, 42)
+    noec_entry(th43, 43)
+    noec_entry(th44, 44)
+    noec_entry(th45, 45)
+    noec_entry(th46, 46)
+    noec_entry(th47, 47)
+
 .data
 	.space 124
 .text

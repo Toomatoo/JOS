@@ -15,30 +15,32 @@ SMP: CPU 1 starting
 SMP: CPU 2 starting
 SMP: CPU 3 starting
 [00000000] new env 00001000
-**Success to find one
-PAGE FAULT!
-TRAP frame at 0xf0236f84 from CPU 1
-  edi  0x0000000**Star0
-  esi  0x00000000
-  ebp  0xf0236fd8
-  oesp 0xf0236fa4
-t  ebx  0xf028a000
- transfe  edx  0xef806000
+**Fail to find one
+**Fail to find one
+**Fail to find one
+**Start transfering
+SYSTEM CALL!
+SYS_getenvid
+TRAP frame at 0xeffeffbc from CPU 1
+  edi  0x000003ff
+  esi  **Start0xf028a000
+  e transfebp  0x00000000
 ring
-  ecx  0xf012248c
-  eax  0x00000000
+  oesp 0xeffeffdc
+  ebx  0x0001ef84
+  edx  0xef806000
+  ecx  0x000003d4
+  eax  0xefff0000
   es   0x----0010
   ds   0x----0010
-  trap 0x0000000e Page Fault
-  cr2  0x00000054
-  err  0x00000000 [kernel, read, not-present]
-  eip  0xf0104f33
+  trap 0x0000000d General Protection
+  err  0x00000102
+  eip  0xf0104fca
   cs   0x----0008
-  flag 0x00000006
-kernel panic on CPU 1 at kern/trap.c:334: kernel page fault va: 00000054
+  flag 0x00000206
+kernel panic on CPU 1 at kern/trap.c:253: unhandled trap in kernel
 Welcome to the JOS kernel monitor!
 Type 'help' for a list of commands.
 Welcome to the JOS kernel monitor!
-Type 'help' for a list of commands.
-
+Type 'help' for a list of comman
 QEMU: Terminated via GDBstub
