@@ -218,7 +218,7 @@ trap_dispatch(struct Trapframe *tf)
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
 	if(tf->tf_trapno == T_PGFLT) {
-		cprintf("PAGE FAULT!\n");
+//		cprintf("PAGE FAULT!\n");
 		page_fault_handler(tf);
 		return;
 	}
@@ -227,7 +227,7 @@ trap_dispatch(struct Trapframe *tf)
 	// The hardware sometimes raises these because of noise on the
 	// IRQ line or other reasons. We don't care.
 	if (tf->tf_trapno == IRQ_OFFSET + IRQ_SPURIOUS) {
-		cprintf("Spurious interrupt on irq 7\n");
+//		cprintf("Spurious interrupt on irq 7\n");
 		print_trapframe(tf);
 		return;
 	}
@@ -237,7 +237,7 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 4: Your code here.
 
 	if(tf->tf_trapno == T_BRKPT) {
-		cprintf("BREAK POINT!\n");
+//		cprintf("BREAK POINT!\n");
 		breakpoint_handler(tf);
 		return;
 	}
@@ -250,6 +250,12 @@ trap_dispatch(struct Trapframe *tf)
 		return;
 	}
 	
+	if(tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER) {
+		lapic_eoi();
+		sched_yield();
+		return;
+	}
+
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
@@ -401,7 +407,7 @@ page_fault_handler(struct Trapframe *tf)
 
 void
 breakpoint_handler(struct Trapframe *tf) {
-	print_trapframe(tf);
+	//print_trapframe(tf);
 	monitor(tf);
 	return;
 }

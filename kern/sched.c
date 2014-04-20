@@ -86,7 +86,7 @@ sched_yield(void)
 		env_run(curenv);
 
 	// sched_halt never returns
-cprintf("**Fail to find one\n");
+//cprintf("**Fail to find one\n");
 	sched_halt();
 }
 

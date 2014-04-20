@@ -94,6 +94,10 @@ funs:
 	ec_entry(th13, 13)
 	ec_entry(th14, 14)
 	reserved_entry()
+	
+.data
+	.space 60
+.text
 	noec_entry(th16, 16)
 	noec_entry(th32, 32)
     noec_entry(th33, 33)
@@ -111,10 +115,6 @@ funs:
     noec_entry(th45, 45)
     noec_entry(th46, 46)
     noec_entry(th47, 47)
-
-.data
-	.space 124
-.text
 	noec_entry(th48, 48)
 
 /*
