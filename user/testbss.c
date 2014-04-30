@@ -13,8 +13,10 @@ umain(int argc, char **argv)
 
 	cprintf("Making sure bss works right...\n");
 	for (i = 0; i < ARRAYSIZE; i++)
-		if (bigarray[i] != 0)
+		if (bigarray[i] != 0) {
+			//cprintf("%u not zero\n", bigarray[i]);
 			panic("bigarray[%d] isn't cleared!\n", i);
+		}
 	for (i = 0; i < ARRAYSIZE; i++)
 		bigarray[i] = i;
 	for (i = 0; i < ARRAYSIZE; i++)
