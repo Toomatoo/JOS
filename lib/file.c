@@ -25,6 +25,7 @@ fsipc(unsigned type, void *dstva)
 		cprintf("[%08x] fsipc %d %08x\n", thisenv->env_id, type, *(uint32_t *)&fsipcbuf);
 
 	ipc_send(fsenv, type, &fsipcbuf, PTE_P | PTE_W | PTE_U);
+//cprintf("fsipc: ipc_recv\n");
 	return ipc_recv(NULL, dstva, NULL);
 }
 
@@ -114,7 +115,7 @@ devfile_read(struct Fd *fd, void *buf, size_t n)
 	// bytes read will be written back to fsipcbuf by the file
 	// system server.
 	int r;
-
+//cprintf("devfile_read: into\n");
 	fsipcbuf.read.req_fileid = fd->fd_file.id;
 	fsipcbuf.read.req_n = n;
 	if ((r = fsipc(FSREQ_READ, NULL)) < 0)
@@ -122,6 +123,7 @@ devfile_read(struct Fd *fd, void *buf, size_t n)
 	assert(r <= n);
 	assert(r <= PGSIZE);
 	memmove(buf, &fsipcbuf, r);
+//cprintf("devfile_read: return\n");
 	return r;
 }
 

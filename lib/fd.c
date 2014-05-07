@@ -87,6 +87,7 @@ fd_lookup(int fdnum, struct Fd **fd_store)
 		return -E_INVAL;
 	}
 	*fd_store = fd;
+//cprintf("fd_loop: return\n");
 	return 0;
 }
 
@@ -206,7 +207,7 @@ read(int fdnum, void *buf, size_t n)
 	int r;
 	struct Dev *dev;
 	struct Fd *fd;
-
+//cprintf("Read in\n");
 	if ((r = fd_lookup(fdnum, &fd)) < 0
 	    || (r = dev_lookup(fd->fd_dev_id, &dev)) < 0)
 		return r;
@@ -216,6 +217,7 @@ read(int fdnum, void *buf, size_t n)
 	}
 	if (!dev->dev_read)
 		return -E_NOT_SUPP;
+//cprintf("read: get to return\n");
 	return (*dev->dev_read)(fd, buf, n);
 }
 

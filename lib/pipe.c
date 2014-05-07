@@ -104,6 +104,7 @@ pipeisclosed(int fdnum)
 static ssize_t
 devpipe_read(struct Fd *fd, void *vbuf, size_t n)
 {
+//cprintf("devpipe_read\n");
 	uint8_t *buf;
 	size_t i;
 	struct Pipe *p;
@@ -126,6 +127,7 @@ devpipe_read(struct Fd *fd, void *vbuf, size_t n)
 			// yield and see what happens
 			if (debug)
 				cprintf("devpipe_read yield\n");
+//cprintf("devpipe_read: p_rpos=%d, p_wpos=%d\n", p->p_rpos, p->p_wpos);
 			sys_yield();
 		}
 		// there's a byte.  take it.

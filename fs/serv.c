@@ -244,6 +244,7 @@ serve(void)
 	while (1) {
 		perm = 0;
 		req = ipc_recv((int32_t *) &whom, fsreq, &perm);
+//cprintf("serve: end ipc_recv\n");
 		if (debug)
 			cprintf("fs req %d from %08x [page %08x: %s]\n",
 				req, whom, uvpt[PGNUM(fsreq)], fsreq);
@@ -264,6 +265,7 @@ serve(void)
 			cprintf("Invalid request code %d from %08x\n", req, whom);
 			r = -E_INVAL;
 		}
+//cprintf("serve: to ipc_send\n");
 		ipc_send(whom, r, pg, perm);
 		sys_page_unmap(0, fsreq);
 	}

@@ -51,8 +51,10 @@ dumbfork(void)
 	// except that in the child, this "fake" call to sys_exofork()
 	// will return 0 instead of the envid of the child.
 	envid = sys_exofork();
-	if (envid < 0)
+	cprintf("**envid modified: %x\n", envid);
+	if (envid < 0) {
 		panic("sys_exofork: %e", envid);
+	}
 	if (envid == 0) {
 		// We're the child.
 		// The copied value of the global variable 'thisenv'
@@ -72,8 +74,9 @@ dumbfork(void)
 	duppage(envid, ROUNDDOWN(&addr, PGSIZE));
 
 	// Start the child environment running
-	if ((r = sys_env_set_status(envid, ENV_RUNNABLE)) < 0)
+	if ((r = sys_env_set_status(envid, ENV_RUNNABLE)) < 0) {
 		panic("sys_env_set_status: %e", r);
+	}
 
 	return envid;
 }
